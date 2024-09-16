@@ -2,16 +2,23 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
-class CategorieSeeder extends Seeder
+class CategoriesTableSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+    public function run()
     {
-        //
+        DB::table('categories')->insert([
+            [
+                'titre' => 'Anniversaire',
+                'description' => 'Produits fabriqués à la main au Sénégal.',
+            ],
+            [
+                'nom' => 'Mariage',
+                'description' => 'Produits alimentaires typiques du Sénégal.',
+            ],
+            // Ajoutez d'autres catégories ici
+        ]);
     }
 }

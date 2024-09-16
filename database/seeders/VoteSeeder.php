@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Vote;
 use Illuminate\Database\Seeder;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class VoteSeeder extends Seeder
 {
@@ -12,6 +13,16 @@ class VoteSeeder extends Seeder
      */
     public function run(): void
     {
-        //
-    }
+        Vote::create([
+            'prestataire_id'=>1,
+            'note' => 5,
+            'client_id' => 1,
+        ]);
+
+        Vote::create([
+            'note' => 4,
+            'client_id' => 2,
+            'prestataire_id'=>1,
+
+        ]);    }
 }
