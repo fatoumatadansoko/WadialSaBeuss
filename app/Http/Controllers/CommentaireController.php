@@ -2,65 +2,98 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreCommentaireRequest;
-use App\Http\Requests\UpdateCommentaireRequest;
 use App\Models\Commentaire;
+use Illuminate\Http\Request;
 
 class CommentaireController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $commentaires = Commentaire::all();
+        return response()->json([
+            'status' => true,
+            'message' => 'Commentaires récupérés avec succès',
+            'data' => $commentaires
+        ], 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(Request $request)
     {
-        //
+        $request->validate([
+            'contenu' => 'required|string',
+            'client_id' => 'required|exists:clients,id',
+            'prestataire_id' => 'required|exists:prestataires,id',
+        ]);
+
+        $commentaire = Commentaire::create($request->all());
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Commentaire créé avec succès',
+            'data' => $commentaire
+        ], 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreCommentaireRequest $request)
+    public function show($id)
     {
-        //
+        $commentaire = Commentaire::find($id);
+
+        if (!$commentaire) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Commentaire non trouvé',
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Commentaire récupéré avec succès',
+            'data' => $commentaire
+        ], 200);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Commentaire $commentaire)
+    public function update(Request $request, $id)
     {
-        //
+        $commentaire = Commentaire::find($id);
+
+        if (!$commentaire) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Commentaire non trouvé',
+            ], 404);
+        }
+
+        $request->validate([
+            'contenu' => 'string',
+            'client_id' => 'exists:clients,id',
+            'prestataire_id' => 'exists:prestataires,id',
+        ]);
+
+        $commentaire->update($request->all());
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Commentaire mis à jour avec succès',
+            'data' => $commentaire
+        ], 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Commentaire $commentaire)
+    public function destroy($id)
     {
-        //
-    }
+        $commentaire = Commentaire::find($id);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateCommentaireRequest $request, Commentaire $commentaire)
-    {
-        //
-    }
+        if (!$commentaire) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Commentaire non trouvé',
+            ], 404);
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Commentaire $commentaire)
-    {
-        //
+        $commentaire->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Commentaire supprimé avec succès',
+        ], 200);
     }
 }

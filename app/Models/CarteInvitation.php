@@ -8,6 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class CarteInvitation extends Model
 {
     use HasFactory;
-    protected $fillable = ['nom', 'image', 'contenu'];
+    protected $fillable = ['user_id','categorie_id','nom', 'image', 'contenu'];
 
 }
