@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\CategorieController;
 use App\Http\Controllers\EvenementController;
 use App\Http\Controllers\CommentaireController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\CarteInvitationController;
 use App\Http\Controllers\CategoriePrestataireController;
 
@@ -99,3 +100,6 @@ Route::get('votes/{id}', [VoteController::class, 'show']);
 Route::put('votes/{id}', [VoteController::class, 'update']);
 Route::delete('votes/{id}', [VoteController::class, 'destroy']);
 
+
+// Route::post('/commentaires', [NotificationController::class, 'storeCommentaire']);
+// Route::post('/votes', [NotificationController::class, 'storeVote']);

@@ -22,12 +22,11 @@ class ImageController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nom' => 'required|string|max:255',
-            'prestataire_id' => 'required|exists:prestataires,id',
+            // 'nom' => 'required|string|max:255',
+            // 'prestataire_id' => 'required|exists:prestataires,id',
         ]);
 
         $image = Image::create($request->all());
-
         return response()->json([
             'status' => true,
             'message' => 'Image créée avec succès',

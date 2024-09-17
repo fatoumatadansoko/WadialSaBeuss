@@ -44,7 +44,7 @@ class DatabaseSeeder extends Seeder
             'status' => 'active',
         ]);
         $client->assignRole($clientRole);
-        Client::create(['user_id' => $client->id]);
+        // Client::create(['user_id' => $client->id]);
 
         // Création d'un prestataire
         $prestataire = User::create([

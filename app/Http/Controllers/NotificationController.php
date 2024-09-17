@@ -2,65 +2,64 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreNotificationRequest;
-use App\Http\Requests\UpdateNotificationRequest;
-use App\Models\Notification;
+use Illuminate\Http\Request;
+use App\Models\Commentaire;
+use App\Models\Vote;
+use App\Notifications\CommentNotification;
+use App\Notifications\VoteNotification;
+use Illuminate\Support\Facades\Notification;
 
 class NotificationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    // Après la création d'un commentaire
+    public function storeCommentaire(Request $request)
     {
-        //
+        // Validation des données
+        $request->validate([
+            'content' => 'required|string',
+            'prestataire_id' => 'required|exists:prestataires,id',
+        ]);
+
+        // Création du commentaire
+        $comment = Commentaire::create([
+            'content' => $request->content,
+            'prestataire_id' => $request->provider_id,
+        ]);
+
+        // Envoyer la notification au prestataire
+        $provider = $comment->provider;
+        Notification::send($provider, new CommentNotification($comment));
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Commentaire ajouté avec succès',
+            'data' => $comment
+        ], 201);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    // Après la création d'un vote
+    public function storeVote(Request $request)
     {
-        //
-    }
+        // Validation des données
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'prestataire_id' => 'required|exists:prestataires,id',
+        ]);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreNotificationRequest $request)
-    {
-        //
-    }
+        // Création du vote
+        $vote = Vote::create([
+            'rating' => $request->rating,
+            'prestataire_id' => $request->provider_id,
+        ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Notification $notification)
-    {
-        //
-    }
+        // Envoyer la notification au prestataire
+        $provider = $vote->provider;
+        Notification::send($provider, new VoteNotification($vote));
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Notification $notification)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateNotificationRequest $request, Notification $notification)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Notification $notification)
-    {
-        //
+        return response()->json([
+            'status' => true,
+            'message' => 'Vote ajouté avec succès',
+            'data' => $vote
+        ], 201);
     }
 }
