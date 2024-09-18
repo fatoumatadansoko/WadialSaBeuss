@@ -14,9 +14,11 @@ return new class extends Migration
         Schema::create('images', function (Blueprint $table) {
             $table->id();
             $table->string('nom');
+            $table->binary('image_data'); // Ajouter cette ligne pour stocker l'image sous forme binaire
             $table->foreignId('prestataire_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
+        
     }
 
     /**

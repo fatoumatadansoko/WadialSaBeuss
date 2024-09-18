@@ -1,30 +1,27 @@
 <?php
 
-namespace Database\Factories;
-
+// database/factories/UserFactory.php
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UserFactory extends Factory
 {
     protected $model = User::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array
-     */
     public function definition()
     {
         return [
-            'nom' => $this->faker->name(),
-            'email' => $this->faker->unique()->safeEmail(),
-            'password' => Hash::make('password'), // Hasher le mot de passe
-            'telephone' => $this->faker->phoneNumber(),
-            'addresse' => $this->faker->address(),
-            'status' => 'actif',
-            'description' => $this->faker->sentence(),
+            'nom' => $this->faker->name,
+            'email' => $this->faker->unique()->safeEmail,
+            'password' => bcrypt('password'), // ou Hash::make('password')
+            'telephone' => $this->faker->phoneNumber,
+            'adresse' => $this->faker->address,
+            'status' => $this->faker->randomElement(['active', 'inactive']),
+            'description' => $this->faker->sentence,
+            'role' => $this->faker->randomElement(['client', 'prestataire']), // ou 'admin' si nécessaire
+            'remember_token' => Str::random(10),
         ];
     }
 }
+

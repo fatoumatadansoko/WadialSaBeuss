@@ -8,11 +8,19 @@ use App\Models\Commentaire;
 use App\Models\CategoriePrestataire;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Notifications\Notifiable;
 
 class Prestataire extends Model
 {
+    use Notifiable;
     use HasFactory;
     protected $fillable = ['user_id', 'categorie_prestataire_id', 'logo', 'ninea', 'disponibilite'];
+
+// App\Models\Prestataire.php
+public function routeNotificationForMail()
+{
+    return $this->email; // Assure-toi que 'email' est un champ valide dans ton modèle Prestataire
+}
 
     public function user()
     {

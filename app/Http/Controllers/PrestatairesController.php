@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePrestatairesRequest;
 use App\Http\Requests\UpdatePrestatairesRequest;
-use App\Models\Prestataires;
+use App\Models\Prestataire;
 
 class PrestatairesController extends Controller
 {
@@ -35,7 +35,7 @@ class PrestatairesController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Prestataires $prestataires)
+    public function show(Prestataire $prestataire)
     {
         //
     }
@@ -43,7 +43,7 @@ class PrestatairesController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Prestataires $prestataires)
+    public function edit(Prestataire $prestataire)
     {
         //
     }
@@ -51,7 +51,7 @@ class PrestatairesController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdatePrestatairesRequest $request, Prestataires $prestataires)
+    public function update(UpdatePrestatairesRequest $request, Prestataire $prestataire)
     {
         //
     }
@@ -59,7 +59,7 @@ class PrestatairesController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Prestataires $prestataires)
+    public function destroy(Prestataire $prestataire)
     {
         //
     }

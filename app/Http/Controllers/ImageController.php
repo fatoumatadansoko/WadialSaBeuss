@@ -2,65 +2,100 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreImageRequest;
-use App\Http\Requests\UpdateImageRequest;
 use App\Models\Image;
+use Illuminate\Http\Request;
 
 class ImageController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // Récupérer toutes les images
     public function index()
     {
-        //
+        $images = Image::all();
+        return response()->json([
+            'status' => true,
+            'message' => 'Images récupérées avec succès',
+            'data' => $images
+        ], 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    // Créer une image
+    public function store(Request $request)
     {
-        //
+        $request->validate([
+            // 'nom' => 'required|string|max:255',
+            // 'prestataire_id' => 'required|exists:prestataires,id',
+        ]);
+
+        $image = Image::create($request->all());
+        return response()->json([
+            'status' => true,
+            'message' => 'Image créée avec succès',
+            'data' => $image
+        ], 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreImageRequest $request)
+    // Récupérer une image spécifique
+    public function show($id)
     {
-        //
+        $image = Image::find($id);
+
+        if (!$image) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Image non trouvée',
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Image récupérée avec succès',
+            'data' => $image
+        ], 200);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Image $image)
+    // Mettre à jour une image
+    public function update(Request $request, $id)
     {
-        //
+        $image = Image::find($id);
+
+        if (!$image) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Image non trouvée',
+            ], 404);
+        }
+
+        $request->validate([
+            'nom' => 'string|max:255',
+            'prestataire_id' => 'exists:prestataires,id',
+        ]);
+
+        $image->update($request->all());
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Image mise à jour avec succès',
+            'data' => $image
+        ], 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Image $image)
+    // Supprimer une image
+    public function destroy($id)
     {
-        //
-    }
+        $image = Image::find($id);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateImageRequest $request, Image $image)
-    {
-        //
-    }
+        if (!$image) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Image non trouvée',
+            ], 404);
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Image $image)
-    {
-        //
+        $image->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Image supprimée avec succès',
+        ], 200);
     }
 }

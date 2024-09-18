@@ -1,20 +1,20 @@
 <?php
 
-namespace Database\Seeders;
-
+// database/seeders/DatabaseSeeder.php
 use Illuminate\Database\Seeder;
-use Database\Seeders\UserSeeder;
+use Database\Seeders\UserTableSeeder;
+use Database\Seeders\ClientTableSeeder;
+use Database\Seeders\PrestataireTableSeeder;
+
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     *
-     * @return void
-     */
     public function run()
     {
-        // Appeler le seeder des utilisateurs
-        $this->call(UserSeeder::class);
+        $this->call([
+            UserTableSeeder::class,
+            PrestataireTableSeeder::class,
+            ClientTableSeeder::class,
+        ]);
     }
 }
