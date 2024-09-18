@@ -8,7 +8,21 @@ class PrestataireTableSeeder extends Seeder
 {
     public function run()
     {
-        // Générer 10 prestataires aléatoires
-        Prestataire::factory()->count(10)->create();
+        Prestataire::create([
+            'user_id' => '6',            
+            'categorie_prestataire_id' => '1',
+            'logo' => 'logo_decoration_diop.jpg',
+            'ninea' => '456321ueueu',
+            'disponibilite' => 'Tous les jours, de 10h à 18h',
+        ]);
+
+        Prestataire::create([
+            'user_id' => '7',            
+            'categorie_prestataire_id' => '2',
+            'logo' => 'logo_resto_diop.jpg',
+            'ninea' => '789456ttttt',
+            'disponibilite' => 'Lundi, Mardi, Mercredi, Samedi de 10h à 18h',
+           
+        ]);
     }
 }

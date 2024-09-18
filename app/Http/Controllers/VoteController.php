@@ -20,21 +20,24 @@ class VoteController extends Controller
 
     // Créer un vote
     public function store(Request $request)
-    {
-        $request->validate([
-            'note' => 'required|integer|min:1|max:5',
-            'client_id' => 'required|exists:clients,id',
-            'prestataire_id' => 'required|exists:prestataires,id',
-        ]);
+{
+    $request->validate([
+        'note' => 'required|integer|min:1|max:5',
+        'client_id' => 'required|exists:clients,id',
+        'prestataire_id' => 'required|exists:prestataires,id',
+    ]);
 
-        $vote = Vote::create($request->all());
+    // dd($request->all()); // Affiche les données de la requête
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Vote créé avec succès',
-            'data' => $vote
-        ], 201);
-    }
+    $vote = Vote::create($request->all());
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Vote créé avec succès',
+        'data' => $vote
+    ], 201);
+}
+
 
     // Récupérer un vote spécifique
     public function show($id)
@@ -59,28 +62,29 @@ class VoteController extends Controller
     public function update(Request $request, $id)
     {
         $vote = Vote::find($id);
-
+    
         if (!$vote) {
             return response()->json([
                 'status' => false,
                 'message' => 'Vote non trouvé',
             ], 404);
         }
-
+    
         $request->validate([
-            'note' => 'integer|min:1|max:5',
-            'client_id' => 'exists:clients,id',
-            'prestataire_id' => 'exists:prestataires,id',
+            'note' => 'nullable|integer|min:1|max:5',
+            'client_id' => 'nullable|exists:clients,id',
+            'prestataire_id' => 'nullable|exists:prestataires,id',
         ]);
-
-        $vote->update($request->all());
-
+    
+        $vote->update($request->only(['note', 'client_id', 'prestataire_id']));
+    
         return response()->json([
             'status' => true,
             'message' => 'Vote mis à jour avec succès',
             'data' => $vote
         ], 200);
     }
+    
 
     // Supprimer un vote
     public function destroy($id)

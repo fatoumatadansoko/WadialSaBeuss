@@ -93,13 +93,13 @@ class AuthController extends Controller
         if (!$token) {
             return response()->json([
                 "status" => false,
-                "message" => "Invalid login details"
+                "message" => "Email ou mot de pass incorrect"
             ], 401);
         }
 
         return response()->json([
             "status" => true,
-            "message" => "User logged in successfully",
+            "message" => "connexion reussi",
             "token" => $token,
             //"expires_in" => auth()->factory()->getTTL() * 60
         ]);
@@ -138,7 +138,7 @@ class AuthController extends Controller
 
         return response()->json([
             "status" => true,
-            "message" => "User logged out successfully"
+            "message" => "deconnexion réussi"
         ]);
     }
 }

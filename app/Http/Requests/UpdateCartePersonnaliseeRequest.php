@@ -22,7 +22,8 @@ class UpdateCartePersonnaliseeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'carte_invitation_id' => 'required|exists:carte_invitations,id',
+            'client_id' => 'required|exists:clients,id',
         ];
     }
 }

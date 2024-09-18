@@ -23,7 +23,7 @@ class CommentaireSeeder extends Seeder
         Commentaire::create([
             'contenu' => 'Très satisfait des prestations.',
             'date_ajout' => now(),
-            'client_id' => 2,
+            'client_id' => 1,
             'prestataire_id' => 2,
         ]);
         }
