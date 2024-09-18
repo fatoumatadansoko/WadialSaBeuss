@@ -39,13 +39,15 @@ class CommentNotification extends Notification
      * @return \Illuminate\Notifications\Messages\MailMessage
      */
     public function toMail($notifiable)
-    {
-        return (new MailMessage)
-                    ->subject('Nouveau Commentaire')
-                    ->line('Vous avez reçu un nouveau commentaire.')
-                    ->line('Commentaire: ' . $this->comment->content)
-                    ->action('Voir Commentaire', url('/comments/' . $this->comment->id));
-    }
+{
+    return (new MailMessage)
+                ->subject('Nouveau Commentaire reçu')
+                ->greeting('Bonjour ' . $notifiable->nom)
+                ->line('Vous avez reçu un nouveau commentaire de la part d\'un client.')
+                ->line('Commentaire: ' . $this->comment->contenu)
+                ->action('Voir le commentaire', url('/comments/' . $this->comment->id))
+                ->line('Merci d\'utiliser notre plateforme!');
+}
 
     /**
      * Get the array representation of the notification.

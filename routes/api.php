@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Contracts\Role;
 use App\Http\Controllers\UserController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\EvenementController;
 use App\Http\Controllers\CommentaireController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\CarteInvitationController;
+use App\Http\Controllers\CartePersonnaliseeController;
 use App\Http\Controllers\CategoriePrestataireController;
 
 Route::get('/', function () {
@@ -28,30 +30,20 @@ Route::post('register', [AuthController::class, 'register']);
 
 
 //CATEGORIES DES EVENEMENTS
-// Route pour récupérer toutes les catégories
 Route::get('categories', [CategorieController::class, 'index'])->name('categories.index');
-// Route pour créer une nouvelle catégorie
 Route::post('categories', [CategorieController::class, 'store'])->name('categories.store');
-// Route pour récupérer une catégorie spécifique
 Route::get('categories/{id}', [CategorieController::class, 'show'])->name('categories.show');
-// Route pour mettre à jour une catégorie
 Route::put('categories/{id}', [CategorieController::class, 'update'])->name('categories.update');
-// Route pour supprimer une catégorie
 Route::delete('categories/{id}', [CategorieController::class, 'destroy'])->name('categories.destroy');
 
 
 //CATEGORIES DES PRESTATAIRES
 
 
-// Route pour récupérer toutes les catégories des prestataires
 Route::get('categoriesprestataires', [CategoriePrestataireController::class, 'index'])->name('categoriesprestataires.index');
-// Route pour créer une nouvelle catégorie des prestataires
 Route::post('categoriesprestataires', [CategoriePrestataireController::class, 'store'])->name('categoriesprestataires.store');
-// Route pour récupérer une catégorie des prestataires spécifique
 Route::get('categoriesprestataires/{id}', [CategoriePrestataireController::class, 'show'])->name('categoriesprestataires.show');
-// Route pour mettre à jour une catégorie des prestataires
 Route::put('categoriesprestataires/{id}', [CategoriePrestataireController::class, 'update'])->name('categoriesprestataires.update');
-// Route pour supprimer une catégorie des prestataires
 Route::delete('categoriesprestataires/{id}', [CategoriePrestataireController::class, 'destroy'])->name('categoriesprestataires.destroy');
 
 
@@ -101,5 +93,10 @@ Route::put('votes/{id}', [VoteController::class, 'update']);
 Route::delete('votes/{id}', [VoteController::class, 'destroy']);
 
 
-// Route::post('/commentaires', [NotificationController::class, 'storeCommentaire']);
-// Route::post('/votes', [NotificationController::class, 'storeVote']);
+
+//ROUTES POUR LES CARTESPERSONNALISÉES 
+Route::get('/cartes-personnalisees/{client}', [CartePersonnaliseeController::class, 'index']);
+Route::post('/cartes-personnalisees', [CartePersonnaliseeController::class, 'store']);
+Route::get('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'show']);
+Route::put('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'update']);
+Route::delete('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'destroy']);

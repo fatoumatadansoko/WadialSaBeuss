@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use App\Models\Commentaire;
+use App\Models\Prestataire;
 use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
+use App\Notifications\CommentNotification;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
-use Exception;
 
 class CommentaireController extends Controller
 {
@@ -42,12 +45,19 @@ class CommentaireController extends Controller
                 'client_id' => 'required|exists:clients,id',
                 'prestataire_id' => 'required|exists:prestataires,id',
             ]);
-
+    
+            // Créer le commentaire
             $commentaire = Commentaire::create($request->all());
-
+    
+            // Récupérer le prestataire qui a reçu le commentaire
+            $prestataire = Prestataire::find($request->prestataire_id);
+    
+            // Envoyer une notification au prestataire par email
+            Notification::send($prestataire, new CommentNotification($commentaire));
+    
             return response()->json([
                 'status' => true,
-                'message' => 'Commentaire créé avec succès',
+                'message' => 'Commentaire créé avec succès et notification envoyée',
                 'data' => $commentaire
             ], 201);
         } catch (ValidationException $e) {
@@ -70,6 +80,7 @@ class CommentaireController extends Controller
             ], 500);
         }
     }
+
 
     public function show($id)
     {
