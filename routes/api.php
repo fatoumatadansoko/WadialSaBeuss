@@ -15,88 +15,78 @@ use App\Http\Controllers\CarteInvitationController;
 use App\Http\Controllers\CartePersonnaliseeController;
 use App\Http\Controllers\CategoriePrestataireController;
 
+// Routes publiques
 Route::get('/', function () {
     return view('welcome');
 });
-Route::apiResource('users', UserController::class);
 
-
-// Route::apiResource('evenements', EvenementController::class)->only('index', 'show');
-
+// Auth routes
 Route::post('login', [AuthController::class, 'login']);
-Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:api');
-Route::post('refresh', [AuthController::class, 'refresh'])->middleware('auth:api');
 Route::post('register', [AuthController::class, 'register']);
 
+// Routes sécurisées par l'authentification
+Route::group(['middleware' => ['auth:api']], function () {
 
-//CATEGORIES DES EVENEMENTS
-Route::get('categories', [CategorieController::class, 'index'])->name('categories.index');
-Route::post('categories', [CategorieController::class, 'store'])->name('categories.store');
-Route::get('categories/{id}', [CategorieController::class, 'show'])->name('categories.show');
-Route::put('categories/{id}', [CategorieController::class, 'update'])->name('categories.update');
-Route::delete('categories/{id}', [CategorieController::class, 'destroy'])->name('categories.destroy');
+    // Déconnexion et rafraîchissement du token
+    Route::post('logout', [AuthController::class, 'logout']);
+    Route::post('refresh', [AuthController::class, 'refresh']);
 
+    // Utilisateurs
+    Route::apiResource('users', UserController::class);
 
-//CATEGORIES DES PRESTATAIRES
+    // CATEGORIES DES EVENEMENTS
+    Route::get('categories', [CategorieController::class, 'index']);
+    Route::post('categories', [CategorieController::class, 'store']);
+    Route::get('categories/{id}', [CategorieController::class, 'show']);
+    Route::put('categories/{id}', [CategorieController::class, 'update']);
+    Route::delete('categories/{id}', [CategorieController::class, 'destroy']);
 
+    // CATEGORIES DES PRESTATAIRES
+    Route::get('categoriesprestataires', [CategoriePrestataireController::class, 'index']);
+    Route::post('categoriesprestataires', [CategoriePrestataireController::class, 'store']);
+    Route::get('categoriesprestataires/{id}', [CategoriePrestataireController::class, 'show']);
+    Route::put('categoriesprestataires/{id}', [CategoriePrestataireController::class, 'update']);
+    Route::delete('categoriesprestataires/{id}', [CategoriePrestataireController::class, 'destroy']);
 
-Route::get('categoriesprestataires', [CategoriePrestataireController::class, 'index'])->name('categoriesprestataires.index');
-Route::post('categoriesprestataires', [CategoriePrestataireController::class, 'store'])->name('categoriesprestataires.store');
-Route::get('categoriesprestataires/{id}', [CategoriePrestataireController::class, 'show'])->name('categoriesprestataires.show');
-Route::put('categoriesprestataires/{id}', [CategoriePrestataireController::class, 'update'])->name('categoriesprestataires.update');
-Route::delete('categoriesprestataires/{id}', [CategoriePrestataireController::class, 'destroy'])->name('categoriesprestataires.destroy');
+    // EVENEMENTS
+    Route::get('evenements', [EvenementController::class, 'index']);
+    Route::post('evenements', [EvenementController::class, 'store']);
+    Route::get('evenements/{id}', [EvenementController::class, 'show']);
+    Route::put('evenements/{id}', [EvenementController::class, 'update']);
+    Route::delete('evenements/{id}', [EvenementController::class, 'destroy']);
 
+    // Cartes d'invitation
+    Route::get('cartes', [CarteInvitationController::class, 'index']);
+    Route::post('cartes', [CarteInvitationController::class, 'store']);
+    Route::get('cartes/{id}', [CarteInvitationController::class, 'show']);
+    Route::put('cartes/{id}', [CarteInvitationController::class, 'update']);
+    Route::delete('cartes/{id}', [CarteInvitationController::class, 'destroy']);
 
-//ROUTE POUR EVENEMENTS
-Route::get('evenements', [EvenementController::class, 'index']);
-Route::post('evenements', [EvenementController::class, 'store']);
-Route::get('evenements/{id}', [EvenementController::class, 'show']);
-Route::put('evenements/{id}', [EvenementController::class, 'update']);
-Route::delete('evenements/{id}', [EvenementController::class, 'destroy']);
+    // Commentaires
+    Route::get('commentaires', [CommentaireController::class, 'index']);
+    Route::post('commentaires', [CommentaireController::class, 'store']);
+    Route::get('commentaires/{id}', [CommentaireController::class, 'show']);
+    Route::put('commentaires/{id}', [CommentaireController::class, 'update']);
+    Route::delete('commentaires/{id}', [CommentaireController::class, 'destroy']);
 
+    // Images
+    Route::get('images', [ImageController::class, 'index']);
+    Route::post('images', [ImageController::class, 'store']);
+    Route::get('images/{id}', [ImageController::class, 'show']);
+    Route::put('images/{id}', [ImageController::class, 'update']);
+    Route::delete('images/{id}', [ImageController::class, 'destroy']);
 
+    // Votes
+    Route::get('votes', [VoteController::class, 'index']);
+    Route::post('votes', [VoteController::class, 'store']);
+    Route::get('votes/{id}', [VoteController::class, 'show']);
+    Route::put('votes/{id}', [VoteController::class, 'update']);
+    Route::delete('votes/{id}', [VoteController::class, 'destroy']);
 
-// Route pour les cartes d'invitation
-
-Route::get('cartes', [CarteInvitationController::class, 'index']);
-Route::post('cartes', [CarteInvitationController::class, 'store']);
-Route::get('cartes/{id}', [CarteInvitationController::class, 'show']);
-Route::put('cartes/{id}', [CarteInvitationController::class, 'update']);
-Route::delete('cartes/{id}', [CarteInvitationController::class, 'destroy']);
-
-
-
-
-// Route pour les commentaires
-Route::get('commentaires', [CommentaireController::class, 'index']);
-Route::post('commentaires', [CommentaireController::class, 'store']);
-Route::get('commentaires/{id}', [CommentaireController::class, 'show']);
-Route::put('commentaires/{id}', [CommentaireController::class, 'update']);
-Route::delete('commentaires/{id}', [CommentaireController::class, 'destroy']);
-
-
-//ROUTES POUR LES IMAGES
-Route::get('images', [ImageController::class, 'index']);
-Route::post('images', [ImageController::class, 'store']);
-Route::get('images/{id}', [ImageController::class, 'show']);
-Route::put('images/{id}', [ImageController::class, 'update']);
-Route::delete('images/{id}', [ImageController::class, 'destroy']);
-
-
-
-//ROUTES POUR LES VOTES 
-
-Route::get('votes', [VoteController::class, 'index']);
-Route::post('votes', [VoteController::class, 'store']);
-Route::get('votes/{id}', [VoteController::class, 'show']);
-Route::put('votes/{id}', [VoteController::class, 'update']);
-Route::delete('votes/{id}', [VoteController::class, 'destroy']);
-
-
-
-//ROUTES POUR LES CARTESPERSONNALISÉES 
-Route::get('/cartes-personnalisees/{client}', [CartePersonnaliseeController::class, 'index']);
-Route::post('/cartes-personnalisees', [CartePersonnaliseeController::class, 'store']);
-Route::get('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'show']);
-Route::put('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'update']);
-Route::delete('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'destroy']);
+    // Cartes personnalisées
+    Route::get('/cartes-personnalisees', [CartePersonnaliseeController::class, 'index']);
+    Route::post('/cartes-personnalisees', [CartePersonnaliseeController::class, 'store']);
+    Route::get('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'show']);
+    Route::put('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'update']);
+    Route::delete('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'destroy']);
+});

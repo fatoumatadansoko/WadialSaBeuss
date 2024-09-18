@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 
 class ImageController extends Controller
 {
-    // Récupérer toutes les images
     public function index()
     {
         $images = Image::all();
@@ -17,13 +16,13 @@ class ImageController extends Controller
             'data' => $images
         ], 200);
     }
-
+    
     // Créer une image
     public function store(Request $request)
     {
         $request->validate([
-            // 'nom' => 'required|string|max:255',
-            // 'prestataire_id' => 'required|exists:prestataires,id',
+             'nom' => 'required|string|max:255',
+             'prestataire_id' => 'required|exists:prestataires,id',
         ]);
 
         $image = Image::create($request->all());
@@ -52,33 +51,34 @@ class ImageController extends Controller
             'data' => $image
         ], 200);
     }
-
+    
     // Mettre à jour une image
     public function update(Request $request, $id)
     {
         $image = Image::find($id);
-
+    
         if (!$image) {
             return response()->json([
                 'status' => false,
                 'message' => 'Image non trouvée',
             ], 404);
         }
-
+    
         $request->validate([
             'nom' => 'string|max:255',
             'prestataire_id' => 'exists:prestataires,id',
         ]);
-
+    
+    
         $image->update($request->all());
-
+    
         return response()->json([
             'status' => true,
             'message' => 'Image mise à jour avec succès',
             'data' => $image
         ], 200);
     }
-
+    
     // Supprimer une image
     public function destroy($id)
     {

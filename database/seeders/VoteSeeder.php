@@ -21,7 +21,7 @@ class VoteSeeder extends Seeder
 
         Vote::create([
             'note' => 4,
-            'client_id' => 2,
+            'client_id' => 1,
             'prestataire_id'=>1,
 
         ]);    }

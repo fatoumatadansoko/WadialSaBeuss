@@ -2,23 +2,27 @@
 
 namespace Database\Seeders;
 
+use App\Models\Categorie;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class CategoriesTableSeeder extends Seeder
+class CategorieSeeder extends Seeder
 {
-    public function run()
+   public function run()
     {
-        DB::table('categories')->insert([
-            [
-                'titre' => 'Anniversaire',
-                'description' => 'Produits fabriqués à la main au Sénégal.',
-            ],
-            [
-                'nom' => 'Mariage',
-                'description' => 'Produits alimentaires typiques du Sénégal.',
-            ],
-            // Ajoutez d'autres catégories ici
+        Categorie::create([
+            'titre' => 'Mariage',
+            'description' => 'Catégorie pour les événements de mariage au Sénégal'
+        ]);
+
+        Categorie::create([
+            'titre' => 'Baptême',
+            'description' => 'Catégorie pour les cérémonies de baptême au Sénégal'
+        ]);
+
+        Categorie::create([
+            'titre' => 'Anniversaire',
+            'description' => 'Catégorie pour les fêtes d’anniversaire au Sénégal'
         ]);
     }
 }

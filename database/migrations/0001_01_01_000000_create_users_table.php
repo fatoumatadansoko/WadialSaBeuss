@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('password');
             $table->text('description')->nullable();
             $table->string('adresse');
-            $table->string('telephone')->nullable();
+            $table->string('telephone')->unique();
             $table->string('role')-> default('client');
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
