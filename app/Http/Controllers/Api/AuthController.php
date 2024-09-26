@@ -22,14 +22,12 @@ class AuthController extends Controller
             'password' => ['required', 'string', 'min:8'],
             'telephone' => ['required', 'string', 'max:255'],
             'adresse' => ['required', 'string', 'max:255'],
-            'status' => ['required', 'string', 'in:active,inactive'],
             'description' => ['nullable', 'string', 'max:255'],
             'role' => ['required', 'string', 'in:client,prestataire'],
             // Champs supplémentaires pour prestataire
             'categorie_prestataire_id' => ['required_if:role,prestataire', 'integer'],
             'logo' => ['required_if:role,prestataire', 'string', 'max:255'],
             'ninea' => ['required_if:role,prestataire', 'string', 'max:255'],
-            'disponibilite' => ['required_if:role,prestataire', 'string', 'max:255'],
         ]);
 
         // Vérifier si la validation échoue
@@ -47,7 +45,6 @@ class AuthController extends Controller
             "password" => Hash::make($request->password),
             "telephone" => $request->telephone,
             "adresse" => $request->adresse,
-            "status" => $request->status,
             "description" => $request->description,
             "role" => $request->role,
         ]);
@@ -58,7 +55,6 @@ class AuthController extends Controller
                 'categorie_prestataire_id' => $request->categorie_prestataire_id,
                 'logo' => $request->logo,
                 'ninea' => $request->ninea,
-                'disponibilite' => $request->disponibilite,
             ]);
         } else{
             Client::create([
