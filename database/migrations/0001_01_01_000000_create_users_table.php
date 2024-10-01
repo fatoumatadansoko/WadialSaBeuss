@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('nom');
             $table->string('email')->unique();
             $table->string('password');
-            $table->text('description')->nullable();
+            $table->text('description');
             $table->string('adresse');
             $table->string('telephone')->unique();
             $table->string('role')-> default('client');
@@ -37,7 +37,6 @@ return new class extends Migration
             $table->string('categorie_prestataire_id');
             $table->string('logo');
             $table->string('ninea');
-            $table->string('disponibilite');
             $table->timestamps();
         });
 

@@ -22,12 +22,12 @@ class AuthController extends Controller
             'password' => ['required', 'string', 'min:8'],
             'telephone' => ['required', 'string', 'max:255'],
             'adresse' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:255'],
+            'description' => ['required', 'string', 'max:255'],
             'role' => ['required', 'string', 'in:client,prestataire'],
             // Champs supplémentaires pour prestataire
-            'categorie_prestataire_id' => ['required_if:role,prestataire', 'integer'],
-            'logo' => ['required_if:role,prestataire', 'string', 'max:255'],
-            'ninea' => ['required_if:role,prestataire', 'string', 'max:255'],
+            'categorie_prestataire_id' => ['nullable'],
+            'logo' => ['nullable'],
+            'ninea' => ['nullable'],
         ]);
 
         // Vérifier si la validation échoue
@@ -39,36 +39,45 @@ class AuthController extends Controller
             ], 422);
         }
         // Créer un nouvel utilisateur
-        $user = User::create([
-            "nom" => $request->nom,
-            "email" => $request->email,
-            "password" => Hash::make($request->password),
-            "telephone" => $request->telephone,
-            "adresse" => $request->adresse,
-            "description" => $request->description,
-            "role" => $request->role,
-        ]);
-        // Créer une entrée dans la table prestataire ou client selon le rôle
-        if ($request->role === 'prestataire') {
-            Prestataire::create([
-                'user_id' => $user->id,
-                'categorie_prestataire_id' => $request->categorie_prestataire_id,
-                'logo' => $request->logo,
-                'ninea' => $request->ninea,
+        try {
+            // Créer un nouvel utilisateur
+            $user = User::create([
+                "nom" => $request->nom,
+                "email" => $request->email,
+                "password" => Hash::make($request->password),
+                "telephone" => $request->telephone,
+                "adresse" => $request->adresse,
+                "description" => $request->description,
+                "role" => $request->role,
             ]);
-        } else{
-            Client::create([
-                'user_id' => $user->id,
-                // Ajoute ici d'autres champs si nécessaire
-            ]);
+            
+            // Créer une entrée dans la table prestataire ou client selon le rôle
+            if ($request->role === 'prestataire') {
+                Prestataire::create([
+                    'user_id' => $user->id,
+                    'categorie_prestataire_id' => $request->categorie_prestataire_id,
+                    'logo' => $request->logo,
+                    'ninea' => $request->ninea,
+                ]);
+            } else {
+                Client::create([
+                    'user_id' => $user->id,
+                    // Ajoute ici d'autres champs si nécessaire
+                ]);
+            }
+        
+            return response()->json([
+                'status' => true,
+                'message' => 'User registered successfully',
+                'user' => $user
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Error during registration: ' . $e->getMessage()
+            ], 500);
         }
-
-        return response()->json([
-            'status' => true,
-            'message' => 'User registered successfully',
-            'user' => $user
-        ], 201);
-    }
+    }        
 
     // Login API - POST (email, password)
     public function login(Request $request)

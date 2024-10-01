@@ -17,7 +17,6 @@ return new class extends Migration
             $table->foreignId('categorie_prestataire_id')->constrained()->onDelete('cascade');
             $table->string('logo');
             $table->string('ninea');
-            $table->string('disponibilite');
             $table->timestamps();
         });
     }

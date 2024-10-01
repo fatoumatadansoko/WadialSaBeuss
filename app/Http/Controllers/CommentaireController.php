@@ -186,4 +186,14 @@ class CommentaireController extends Controller
             ], 500);
         }
     }
+    public function getCommentairesByPrestataire($id)
+{
+    // Récupérer les commentaires pour le prestataire avec l'ID donné
+    try {
+        $commentaires = Commentaire::where('prestataire_id', $id)->get();
+        return response()->json($commentaires);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Une erreur est survenue lors de la récupération des commentaires.'], 500);
+    }
+}
 }

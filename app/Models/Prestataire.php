@@ -14,7 +14,7 @@ class Prestataire extends Model
 {
     use Notifiable;
     use HasFactory;
-    protected $fillable = ['user_id', 'categorie_prestataire_id', 'logo', 'ninea', 'disponibilite'];
+    protected $fillable = ['user_id', 'categorie_prestataire_id', 'logo', 'ninea'];
 
 // App\Models\Prestataire.php
 public function routeNotificationForMail()
@@ -35,11 +35,6 @@ public function routeNotificationForMail()
     public function commentaires()
     {
         return $this->hasMany(Commentaire::class);
-    }
-
-    public function votes()
-    {
-        return $this->hasMany(Vote::class);
     }
 
     public function images()

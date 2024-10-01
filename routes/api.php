@@ -31,9 +31,13 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('refresh', [AuthController::class, 'refresh']);
 
+
+
     // Utilisateurs
     Route::apiResource('users', UserController::class);
-
+    Route::get('users/{id}', [UserController::class,'show']);
+    Route::get('commentaires/prestataire/{id}', [CommentaireController::class, 'getCommentairesByPrestataire']);
+        
     // CATEGORIES DES EVENEMENTS
     Route::get('categories', [CategorieController::class, 'index']);
     Route::post('categories', [CategorieController::class, 'store']);
@@ -89,4 +93,4 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'show']);
     Route::put('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'update']);
     Route::delete('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'destroy']);
-});
+    });
