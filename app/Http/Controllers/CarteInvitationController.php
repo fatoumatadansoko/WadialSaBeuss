@@ -17,42 +17,55 @@ class CarteInvitationController extends Controller
         ], 200);
     }
 
-    public function store(Request $request)
-    {
-        try {
-            // Validation des données
-            $request->validate([
-                'user_id' => 'required|exists:users,id',
-                'categorie_id' => 'required|exists:categories,id',
-                'nom' => 'required|string|max:255',
-                'image' => 'required|string|max:255',
-                'contenu' => 'required|string',
-            ]);
-    
-            // Création de la carte d'invitation
-            $carte = CarteInvitation::create([
-                'user_id' => $request->user_id,
-                'categorie_id' => $request->categorie_id,
-                'nom' => $request->nom,
-                'image' => $request->image,
-                'contenu' => $request->contenu,
-            ]);
-    
-            // Retourner une réponse JSON avec la carte créée
-            return response()->json([
-                'message' => 'Carte d\'invitation créée avec succès',
-                'carte' => $carte
-            ], 201);
-    
-        } catch (\Exception $e) {
-            // Retourner une erreur en cas d'exception
-            return response()->json([
-                'status' => false,
-                'message' => 'Erreur lors de la création de la carte',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
+
+   
+
+            public function store(Request $request)
+            {
+                // Validation des données
+                $request->validate([
+                    'user_id' => 'required|exists:users,id',
+                    'categorie_id' => 'required|exists:categories,id',
+                    'nom' => 'required|string|max:255',
+                    'contenu' => 'required|string',
+                    'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validation de l'image
+                ]);
+            
+                try {
+                    // Création de la carte d'invitation
+                    $carteinvitation = new CarteInvitation();
+                    $carteinvitation->fill([
+                        'user_id' => $request->user_id,
+                        'categorie_id' => $request->categorie_id,
+                        'nom' => $request->nom,
+                        'contenu' => $request->contenu,
+                    ]);
+            
+                    // Vérifier si une image a été téléchargée et la stocker
+                    if ($request->hasFile('image')) {
+                        $image = $request->file('image');
+                        $carteinvitation->image = $image->store('cartes', 'public'); // Stocker l'image
+                    }
+            
+                    // Enregistrer la carte d'invitation
+                    $carteinvitation->save();
+            
+                    // Retourner une réponse JSON avec la carte créée
+                    return response()->json([
+                        'message' => 'Carte d\'invitation créée avec succès',
+                        'carte' => $carteinvitation
+                    ], 201);
+            
+                } catch (\Exception $e) {
+                    // Retourner une erreur en cas d'exception
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Erreur lors de la création de la carte',
+                        'error' => $e->getMessage(),
+                    ], 500);
+                }
+            }
+            
     
 
     public function show($id)

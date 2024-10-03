@@ -8,6 +8,7 @@ use App\Models\Prestataire;
 use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
 use App\Notifications\CommentNotification;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 
@@ -15,7 +16,7 @@ class CommentaireController extends Controller
 {
     public function index()
     {
-        try {
+                try {
             $commentaires = Commentaire::all();
             return response()->json([
                 'status' => true,
@@ -40,19 +41,21 @@ class CommentaireController extends Controller
     public function store(Request $request)
     {
         try {
+            // Valider les données du formulaire
             $request->validate([
                 'contenu' => 'required|string',
-                'client_id' => 'required|exists:clients,id',
                 'prestataire_id' => 'required|exists:prestataires,id',
             ]);
     
+            // Ajouter l'ID du client manuellement (l'utilisateur connecté)
+            $data = $request->all();
+            $data['client_id'] = Auth::id();
+    
             // Créer le commentaire
-            $commentaire = Commentaire::create($request->all());
+            $commentaire = Commentaire::create($data);
     
-            // Récupérer le prestataire qui a reçu le commentaire
+            // Récupérer le prestataire et envoyer la notification
             $prestataire = Prestataire::find($request->prestataire_id);
-    
-            // Envoyer une notification au prestataire par email
             Notification::send($prestataire, new CommentNotification($commentaire));
     
             return response()->json([
@@ -60,6 +63,7 @@ class CommentaireController extends Controller
                 'message' => 'Commentaire créé avec succès et notification envoyée',
                 'data' => $commentaire
             ], 201);
+    
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -80,6 +84,7 @@ class CommentaireController extends Controller
             ], 500);
         }
     }
+    
 
 
     public function show($id)

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PrestataireController;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Contracts\Role;
@@ -37,6 +38,7 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::apiResource('users', UserController::class);
     Route::get('users/{id}', [UserController::class,'show']);
     Route::get('commentaires/prestataire/{id}', [CommentaireController::class, 'getCommentairesByPrestataire']);
+    Route::apiResource('prestataires', PrestataireController::class);
         
     // CATEGORIES DES EVENEMENTS
     Route::get('categories', [CategorieController::class, 'index']);

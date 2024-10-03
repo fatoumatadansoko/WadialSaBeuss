@@ -24,10 +24,6 @@ class AuthController extends Controller
             'adresse' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string', 'max:255'],
             'role' => ['required', 'string', 'in:client,prestataire'],
-            // Champs supplémentaires pour prestataire
-            'categorie_prestataire_id' => ['nullable'],
-            'logo' => ['nullable'],
-            'ninea' => ['nullable'],
         ]);
 
         // Vérifier si la validation échoue
@@ -50,15 +46,22 @@ class AuthController extends Controller
                 "description" => $request->description,
                 "role" => $request->role,
             ]);
-            
+    
             // Créer une entrée dans la table prestataire ou client selon le rôle
             if ($request->role === 'prestataire') {
-                Prestataire::create([
+                $prestataire = new Prestataire();
+                $prestataire->fill([
                     'user_id' => $user->id,
                     'categorie_prestataire_id' => $request->categorie_prestataire_id,
                     'logo' => $request->logo,
                     'ninea' => $request->ninea,
-                ]);
+                ]); // Utilise les données validées
+                if ($request->hasFile('logo')) {
+                    $logo = $request->file('logo');
+                    $prestataire->logo = $logo->store('prestataires', 'public');
+                }
+                // Enregistre la ressource dans la base de données
+                $prestataire->save();
             } else {
                 Client::create([
                     'user_id' => $user->id,
@@ -93,7 +96,7 @@ class AuthController extends Controller
             "email" => $request->email,
             "password" => $request->password
         ]);
-
+$user=auth()->user();
         // Vérification de la validité du token
         if (!$token) {
             return response()->json([
@@ -106,7 +109,8 @@ class AuthController extends Controller
             "status" => true,
             "message" => "connexion reussi",
             "token" => $token,
-            //"expires_in" => auth()->factory()->getTTL() * 60
+            "user" => $user,
+            "expires_in" => auth()->factory()->getTTL() * 60
         ]);
     }
 
