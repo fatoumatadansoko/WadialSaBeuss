@@ -22,7 +22,7 @@ class AuthController extends Controller
             'password' => ['required', 'string', 'min:8'],
             'telephone' => ['required', 'string', 'max:255'],
             'adresse' => ['required', 'string', 'max:255'],
-            'description' => ['required', 'string', 'max:255'],
+            'description' => ['required', 'string', 'max:500'],
             'role' => ['required', 'string', 'in:client,prestataire'],
         ]);
 

@@ -39,7 +39,8 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('users/{id}', [UserController::class,'show']);
     Route::get('commentaires/prestataire/{id}', [CommentaireController::class, 'getCommentairesByPrestataire']);
     Route::apiResource('prestataires', PrestataireController::class);
-        
+    Route::get('/profile', [AuthController  ::class, 'profile']);
+
     // CATEGORIES DES EVENEMENTS
     Route::get('categories', [CategorieController::class, 'index']);
     Route::post('categories', [CategorieController::class, 'store']);
@@ -65,7 +66,7 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('cartes', [CarteInvitationController::class, 'index']);
     Route::post('cartes', [CarteInvitationController::class, 'store']);
     Route::get('cartes/{id}', [CarteInvitationController::class, 'show']);
-    Route::put('cartes/{id}', [CarteInvitationController::class, 'update']);
+    Route::post('cartes/{id}', [CarteInvitationController::class, 'update']);
     Route::delete('cartes/{id}', [CarteInvitationController::class, 'destroy']);
 
     // Commentaires
