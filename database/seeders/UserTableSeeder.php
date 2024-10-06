@@ -9,7 +9,18 @@ class UserTableSeeder extends Seeder
 {
     public function run()
     {
-        // Générer 10 utilisateurs aléatoires
-        User::factory()->count(10)->create();
+        // Créer un seul utilisateur admin
+        User::create([
+            'nom' => 'Admin User', // Nom de l'utilisateur
+            'email' => 'fatoumatadansoko61.com', // Email unique
+            'password' => bcrypt('password'), // Mot de passe
+            'telephone' => '0123456789', // Numéro de téléphone
+            'adresse' => '123 Admin St, Admin City', // Adresse
+            'status' => 'active', // Statut
+            'description' => 'Description de l\'administrateur', // Description
+            'role' => 'admin', // Rôle de l'utilisateur
+            'remember_token' => null, // Vous pouvez laisser ceci vide ou générer un token
+            'logo' => 'logo.png', //
+        ]);
     }
 }

@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->text('contenu');
             $table->tinyInteger('note')->unsigned()->default(1);
-            $table->timestamp('date_ajout');
             $table->foreignId('client_id')->constrained()->onDelete('cascade');
             $table->foreignId('prestataire_id')->constrained()->onDelete('cascade');
             $table->timestamps();

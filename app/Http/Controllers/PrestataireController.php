@@ -51,4 +51,30 @@ class PrestataireController extends Controller
             'data' => $prestataire
         ]);
     }
+    public function getPrestatairesByCategory($id)
+    {
+        try {
+            // Récupérer les prestataires appartenant à la catégorie donnée
+            $prestataires = Prestataire::where('categorie_prestataire_id', $id)->with('user')->get();
+
+            if ($prestataires->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Aucun prestataire trouvé pour cette catégorie.',
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $prestataires,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la récupération des prestataires.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
 }

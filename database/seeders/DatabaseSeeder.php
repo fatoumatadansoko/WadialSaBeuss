@@ -18,15 +18,16 @@ class DatabaseSeeder extends Seeder
 {
     public function run()
     {  $this->call([
-        CategoriePrestataireSeeder::class, 
-        CategorieSeeder::class,
-        EvenementSeeder::class,
-        PrestataireTableSeeder::class,
-        CarteInvitationSeeder::class,
-        CartePersonnaliseeSeeder::class,
-        CommentaireSeeder::class,
-        VoteSeeder::class,
-        ImageSeeder::class,
+        UserTableSeeder::class,
+        // CategoriePrestataireSeeder::class, 
+        // CategorieSeeder::class,
+        // EvenementSeeder::class,
+        // PrestataireTableSeeder::class,
+        // CarteInvitationSeeder::class,
+        // CartePersonnaliseeSeeder::class,
+        // CommentaireSeeder::class,
+        // VoteSeeder::class,
+        // ImageSeeder::class,
     ]);
     }
 }

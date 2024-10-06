@@ -4,13 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Evenement;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class EvenementController extends Controller
 {
     // Récupérer tous les événements
     public function index()
     {
-        $evenements = Evenement::all();
+        // Récupérer l'ID de l'utilisateur connecté
+        $userId = Auth::id();
+
+        // Récupérer les événements où le user_id est égal à l'utilisateur connecté
+        $evenements = Evenement::where('user_id', $userId)->get();
+
         return response()->json([
             'status' => true,
             'message' => 'Événements récupérés avec succès',
@@ -28,8 +34,9 @@ class EvenementController extends Controller
             'type' => 'required|in:mariage,anniversaire,autre',
             'budget' => 'required|in:moins de 500000,500000 à 1000000,plus de 1000000',
         ]);
+        $userId = Auth::id(); // Cela vous donnera l'ID de l'utilisateur authentifié
 
-        $evenement = Evenement::create($request->all());
+        $evenement = Evenement::create(array_merge($request->all(), ['user_id' => $userId]));
 
         return response()->json([
             'status' => true,
@@ -56,6 +63,16 @@ class EvenementController extends Controller
             'data' => $evenement
         ], 200);
     }
+public function getUserEvents($userId)
+{
+    $evenements = Evenement::where('user_id', $userId)->get();
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Événements récupérés avec succès',
+        'data' => $evenements
+    ], 200);
+}
 
     // Mettre à jour un événement
     public function update(Request $request, $id)

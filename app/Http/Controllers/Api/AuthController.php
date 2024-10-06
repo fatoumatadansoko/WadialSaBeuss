@@ -17,15 +17,16 @@ class AuthController extends Controller
     {
         // Valider la requête
         $validator = Validator::make($request->all(), [
-            'nom' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'nom' => ['required', 'string', 'max:25'],
+            'email' => ['required', 'string', 'email', 'max:50', 'unique:users'],
             'password' => ['required', 'string', 'min:8'],
-            'telephone' => ['required', 'string', 'max:255'],
-            'adresse' => ['required', 'string', 'max:255'],
-            'description' => ['required', 'string', 'max:500'],
+            'telephone' => ['required', 'string', 'max:15'],
+            'adresse' => ['required', 'string', 'max:225'],
+            'description' => ['required', 'string', 'max:255'],
+            'logo' => ['required', 'file', 'mimes:jpeg,png,jpg', 'max:3048'],
             'role' => ['required', 'string', 'in:client,prestataire'],
         ]);
-
+    
         // Vérifier si la validation échoue
         if ($validator->fails()) {
             return response()->json([
@@ -34,10 +35,10 @@ class AuthController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
-        // Créer un nouvel utilisateur
+    
         try {
-            // Créer un nouvel utilisateur
-            $user = User::create([
+            // Préparer les données de l'utilisateur
+            $userData = [
                 "nom" => $request->nom,
                 "email" => $request->email,
                 "password" => Hash::make($request->password),
@@ -45,22 +46,27 @@ class AuthController extends Controller
                 "adresse" => $request->adresse,
                 "description" => $request->description,
                 "role" => $request->role,
-            ]);
+            ];
     
-            // Créer une entrée dans la table prestataire ou client selon le rôle
+            // Vérifier si un logo a été uploadé
+            if ($request->hasFile('logo')) {
+                $logo = $request->file('logo');
+                $userData['logo'] = $logo->store('users', 'public');  // Enregistre le logo dans 'storage/app/public/users'
+            }
+    
+            // Créer un nouvel utilisateur
+            $user = User::create($userData);
+    
+            // Associer l'utilisateur au rôle
             if ($request->role === 'prestataire') {
                 $prestataire = new Prestataire();
                 $prestataire->fill([
                     'user_id' => $user->id,
                     'categorie_prestataire_id' => $request->categorie_prestataire_id,
-                    'logo' => $request->logo,
                     'ninea' => $request->ninea,
-                ]); // Utilise les données validées
-                if ($request->hasFile('logo')) {
-                    $logo = $request->file('logo');
-                    $prestataire->logo = $logo->store('prestataires', 'public');
-                }
-                // Enregistre la ressource dans la base de données
+                ]);
+    
+                // Le logo est déjà traité dans l'utilisateur, donc inutile de le traiter de nouveau ici
                 $prestataire->save();
             } else {
                 Client::create([
@@ -68,19 +74,20 @@ class AuthController extends Controller
                     // Ajoute ici d'autres champs si nécessaire
                 ]);
             }
-        
+    
             return response()->json([
                 'status' => true,
-                'message' => 'User registered successfully',
+                'message' => 'Inscription réussi',
                 'user' => $user
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Error during registration: ' . $e->getMessage()
+                'message' => 'Erreur lors de l\'inscription: ' . $e->getMessage()
             ], 500);
         }
-    }        
+    }
+    
 
     // Login API - POST (email, password)
     public function login(Request $request)

@@ -35,10 +35,7 @@ Route::group(['middleware' => ['auth:api']], function () {
 
 
     // Utilisateurs
-    Route::apiResource('users', UserController::class);
-    Route::get('users/{id}', [UserController::class,'show']);
-    Route::get('commentaires/prestataire/{id}', [CommentaireController::class, 'getCommentairesByPrestataire']);
-    Route::apiResource('prestataires', PrestataireController::class);
+   
     Route::get('/profile', [AuthController  ::class, 'profile']);
 
     // CATEGORIES DES EVENEMENTS
@@ -49,13 +46,13 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::delete('categories/{id}', [CategorieController::class, 'destroy']);
 
     // CATEGORIES DES PRESTATAIRES
-    Route::get('categoriesprestataires', [CategoriePrestataireController::class, 'index']);
     Route::post('categoriesprestataires', [CategoriePrestataireController::class, 'store']);
     Route::get('categoriesprestataires/{id}', [CategoriePrestataireController::class, 'show']);
     Route::put('categoriesprestataires/{id}', [CategoriePrestataireController::class, 'update']);
     Route::delete('categoriesprestataires/{id}', [CategoriePrestataireController::class, 'destroy']);
 
     // EVENEMENTS
+    Route::get('evenements/utilisateur/{id}', [EvenementController::class, 'getUserEvents']);
     Route::get('evenements', [EvenementController::class, 'index']);
     Route::post('evenements', [EvenementController::class, 'store']);
     Route::get('evenements/{id}', [EvenementController::class, 'show']);
@@ -63,16 +60,13 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::delete('evenements/{id}', [EvenementController::class, 'destroy']);
 
     // Cartes d'invitation
-    Route::get('cartes', [CarteInvitationController::class, 'index']);
-    Route::post('cartes', [CarteInvitationController::class, 'store']);
+  
     Route::get('cartes/{id}', [CarteInvitationController::class, 'show']);
     Route::post('cartes/{id}', [CarteInvitationController::class, 'update']);
     Route::delete('cartes/{id}', [CarteInvitationController::class, 'destroy']);
 
     // Commentaires
-    Route::get('commentaires', [CommentaireController::class, 'index']);
-    Route::post('commentaires', [CommentaireController::class, 'store']);
-    Route::get('commentaires/{id}', [CommentaireController::class, 'show']);
+   
     Route::put('commentaires/{id}', [CommentaireController::class, 'update']);
     Route::delete('commentaires/{id}', [CommentaireController::class, 'destroy']);
 
@@ -97,3 +91,15 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::put('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'update']);
     Route::delete('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'destroy']);
     });
+    Route::get('commentaires/{id}', [CommentaireController::class, 'show']);
+
+    Route::get('commentaires', [CommentaireController::class, 'index']);
+    Route::post('commentaires', [CommentaireController::class, 'store']);
+    Route::get('categoriesprestataires', [CategoriePrestataireController::class, 'index']);
+    Route::get('commentaires/prestataire/{id}', [CommentaireController::class, 'getCommentairesByPrestataire']);
+    Route::apiResource('prestataires', PrestataireController::class);
+    Route::get('/prestataires/category/{id}', [PrestataireController::class, 'getPrestatairesByCategory']);
+    Route::get('cartes', [CarteInvitationController::class, 'index']);
+    Route::post('cartes', [CarteInvitationController::class, 'store']);
+    Route::get('users/{id}', [UserController::class,'show']);
+    Route::apiResource('users', UserController::class);

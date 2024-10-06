@@ -19,7 +19,7 @@ class UserFactory extends Factory
             'adresse' => $this->faker->address,
             'status' => $this->faker->randomElement(['active', 'inactive']),
             'description' => $this->faker->sentence,
-            'role' => $this->faker->randomElement(['client', 'prestataire']), // ou 'admin' si nécessaire
+            'role' => $this->faker->randomElement(['client', 'prestataire', 'admin']), // ou 'admin' si nécessaire
             'remember_token' => Str::random(10),
         ];
     }
