@@ -41,4 +41,9 @@ public function routeNotificationForMail()
     {
         return $this->hasMany(Image::class);
     }
+    public function demandes()
+    {
+        return $this->hasMany(DemandePrestation::class);
+    }
+    
 }

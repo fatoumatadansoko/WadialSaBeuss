@@ -70,13 +70,6 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::put('commentaires/{id}', [CommentaireController::class, 'update']);
     Route::delete('commentaires/{id}', [CommentaireController::class, 'destroy']);
 
-    // Images
-    Route::get('images', [ImageController::class, 'index']);
-    Route::post('images', [ImageController::class, 'store']);
-    Route::get('images/{id}', [ImageController::class, 'show']);
-    Route::put('images/{id}', [ImageController::class, 'update']);
-    Route::delete('images/{id}', [ImageController::class, 'destroy']);
-
     // Votes
     Route::get('votes', [VoteController::class, 'index']);
     Route::post('votes', [VoteController::class, 'store']);
@@ -85,6 +78,11 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::delete('votes/{id}', [VoteController::class, 'destroy']);
 
     // Cartes personnalisées
+    Route::post('/cartes-personnalisees/invitation/{id}/create', [CartePersonnaliseeController::class, 'createFromInvitation']);
+    Route::post('/cartes-personnalisees/invitation/{id}/update', [CartePersonnaliseeController::class, 'updateFromInvitation']);
+    Route::get('/cartes-personnalisees', [CartePersonnaliseeController::class,'index']);
+    Route::delete('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'destroy']);
+
     Route::get('/cartes-personnalisees', [CartePersonnaliseeController::class, 'index']);
     Route::post('/cartes-personnalisees', [CartePersonnaliseeController::class, 'store']);
     Route::get('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'show']);

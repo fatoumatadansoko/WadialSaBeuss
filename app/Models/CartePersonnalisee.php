@@ -9,7 +9,7 @@ class CartePersonnalisee extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['carte_invitation_id', 'client_id'];
+    protected $fillable = ['carte_invitation_id', 'client_id','nom','image','contenu'];
 
     // Relation avec CarteInvitation
     public function carteInvitation()

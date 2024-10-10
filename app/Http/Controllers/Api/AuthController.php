@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
-
+use Illuminate\Support\Facades\Auth; // Pour Auth::attempt(), Auth::user(), etc.
 class AuthController extends Controller
 {
     // Register API - POST (name, email, password, role, etc.)

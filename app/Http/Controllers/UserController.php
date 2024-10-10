@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -48,5 +49,15 @@ class UserController extends Controller
     {
         User::destroy($id);
         return response()->json(null, 204);
+    }
+    public function userDetails()
+    {
+        // Vérifier si l'utilisateur est authentifié
+        if (Auth::check()) {
+            // Récupérer les détails de l'utilisateur connecté
+            return response()->json(Auth::user(), 200);
+        }
+
+        return response()->json(['message' => 'Unauthorized'], 401);
     }
 }

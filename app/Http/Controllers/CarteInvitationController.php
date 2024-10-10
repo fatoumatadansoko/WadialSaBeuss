@@ -133,4 +133,30 @@ class CarteInvitationController extends Controller
             'message' => 'Carte supprimée avec succès',
         ], 200);
     }
+    public function getCartesByCategory($id)
+    {
+        try {
+            // Récupérer les cartes appartenant à la catégorie donnée
+            $cartesinvitations = CarteInvitation::where('categorie_id', $id)->with('user')->get();
+
+            if ($cartesinvitations->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Aucune carte trouvé pour cette categories.',
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $cartesinvitations,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la récupération des cartes.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
 }
