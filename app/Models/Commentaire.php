@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Commentaire extends Model
 {
     use HasFactory;
-    protected $fillable = ['contenu','note','client_id','prestataire_id'];
+    protected $fillable = ['contenu','note','user_id','prestataire_id'];
     
  // Relation vers le prestataire
  public function prestataire()

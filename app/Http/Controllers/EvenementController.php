@@ -24,26 +24,52 @@ class EvenementController extends Controller
         ], 200);
     }
 
+    public function getAllEvents()
+{
+    // Vérifier si l'utilisateur connecté est un administrateur
+    if (Auth::user()->role !== 'admin') {
+        return response()->json([
+            'status' => false,
+            'message' => 'Accès refusé',
+        ], 403);
+    }
+
+    // Récupérer tous les événements
+    $evenements = Evenement::all();
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Tous les événements récupérés avec succès',
+        'data' => $evenements
+    ], 200);
+}
+
     // Créer un événement
     public function store(Request $request)
     {
+        // Validation du formulaire
         $request->validate([
             'titre' => 'required|string|max:255',
-            'event_date' => 'required|date',
+            'event_date' => 'required|date|after:today', // Validation de la date (doit être après aujourd'hui)
             'lieu' => 'required|string|max:255',
             'type' => 'required|in:mariage,anniversaire,autre',
             'budget' => 'required|in:moins de 500000,500000 à 1000000,plus de 1000000',
         ]);
-        $userId = Auth::id(); // Cela vous donnera l'ID de l'utilisateur authentifié
-
+    
+        // Récupération de l'ID de l'utilisateur authentifié
+        $userId = Auth::id();
+    
+        // Création de l'événement
         $evenement = Evenement::create(array_merge($request->all(), ['user_id' => $userId]));
-
+    
+        // Réponse JSON
         return response()->json([
             'status' => true,
             'message' => 'Événement créé avec succès',
             'data' => $evenement
         ], 201);
     }
+    
 
     // Récupérer un événement spécifique
     public function show($id)

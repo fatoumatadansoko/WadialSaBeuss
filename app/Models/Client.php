@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Client extends Model
 {
     use HasFactory, HasRoles;
-    protected $fillable = ['user_id','password','description','email','adresse','telephone','nom','role','statut'];
+    protected $fillable = ['user_id','password','email','adresse','telephone','nom','role','statut'];
 
     public function user()
     {

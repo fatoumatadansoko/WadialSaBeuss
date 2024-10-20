@@ -49,7 +49,7 @@ class CommentaireController extends Controller
     
             // Ajouter l'ID du client manuellement (l'utilisateur connecté)
             $data = $request->all();
-            $data['client_id'] = Auth::id();
+            $data['user_id'] = Auth::id();
     
             // Créer le commentaire
             $commentaire = Commentaire::create($data);

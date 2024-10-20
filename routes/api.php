@@ -15,6 +15,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\CarteInvitationController;
 use App\Http\Controllers\CartePersonnaliseeController;
 use App\Http\Controllers\CategoriePrestataireController;
+use App\Http\Controllers\ClientsController;
 
 // Routes publiques
 Route::get('/', function () {
@@ -27,12 +28,24 @@ Route::post('register', [AuthController::class, 'register']);
 
 // Routes sécurisées par l'authentification
 Route::group(['middleware' => ['auth:api']], function () {
-
+});
     // Déconnexion et rafraîchissement du token
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('refresh', [AuthController::class, 'refresh']);
 
 
+// Les route de l'admin
+// Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::post('cartes', [CarteInvitationController::class, 'store']);
+    Route::get('/admin/events', [EvenementController::class, 'getAllEvents']);
+    Route::post('cartes/{id}', [CarteInvitationController::class, 'update']);
+    Route::delete('cartes/{id}', [CarteInvitationController::class, 'destroy']);
+    Route::get('users/{id}', [UserController::class,'show']);
+    Route::apiResource('users', UserController::class);
+
+        // Les routes du client
+
+       
 
     // Utilisateurs
    
@@ -59,12 +72,11 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::put('evenements/{id}', [EvenementController::class, 'update']);
     Route::delete('evenements/{id}', [EvenementController::class, 'destroy']);
 
+
     // Cartes d'invitation
   
     Route::get('cartes/{id}', [CarteInvitationController::class, 'show']);
-    Route::post('cartes/{id}', [CarteInvitationController::class, 'update']);
-    Route::delete('cartes/{id}', [CarteInvitationController::class, 'destroy']);
-
+   
     // Commentaires
    
     Route::put('commentaires/{id}', [CommentaireController::class, 'update']);
@@ -82,22 +94,29 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::post('/cartes-personnalisees/invitation/{id}/update', [CartePersonnaliseeController::class, 'updateFromInvitation']);
     Route::get('/cartes-personnalisees', [CartePersonnaliseeController::class,'index']);
     Route::delete('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'destroy']);
+    Route::post('/cartes-personnalisees/{id}/envoyer', [CartePersonnaliseeController::class, 'envoyerCarte']);
+    Route::get('/cartes-personnalisees/{id}/invites', [CartePersonnaliseeController::class, 'afficherInvites']);
+    // Route::get('/cartes-personnalisees/client/{id}', [CartePersonnaliseeController::class, 'getCartesPersonnalisees']);
+    Route::get('/cartes-personnalisees/client/{id}', [CartePersonnaliseeController::class, 'getCartesPersonnaliseesByClientId']);
+
+
 
     Route::get('/cartes-personnalisees', [CartePersonnaliseeController::class, 'index']);
     Route::post('/cartes-personnalisees', [CartePersonnaliseeController::class, 'store']);
     Route::get('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'show']);
     Route::put('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'update']);
     Route::delete('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'destroy']);
-    });
+    Route::get('/cartes/category/{id}', [CarteInvitationController::class, 'getCartesByCategory']);
     Route::get('commentaires/{id}', [CommentaireController::class, 'show']);
 
     Route::get('commentaires', [CommentaireController::class, 'index']);
-    Route::post('commentaires', [CommentaireController::class, 'store']);
+    Route::post('/commentaires', [CommentaireController::class, 'store']);
     Route::get('categoriesprestataires', [CategoriePrestataireController::class, 'index']);
     Route::get('commentaires/prestataire/{id}', [CommentaireController::class, 'getCommentairesByPrestataire']);
     Route::apiResource('prestataires', PrestataireController::class);
     Route::get('/prestataires/category/{id}', [PrestataireController::class, 'getPrestatairesByCategory']);
     Route::get('cartes', [CarteInvitationController::class, 'index']);
-    Route::post('cartes', [CarteInvitationController::class, 'store']);
-    Route::get('users/{id}', [UserController::class,'show']);
-    Route::apiResource('users', UserController::class);
+    Route::post('demande-prestation', [PrestataireController::class, 'demandePrestation']);
+    Route::get('prestataires/{prestataireId}/demandes', [PrestataireController::class, 'getDemandesForPrestataire']);
+    Route::get('/prestataires/rated', [PrestataireController::class, 'getPrestatairesByRating']);
+

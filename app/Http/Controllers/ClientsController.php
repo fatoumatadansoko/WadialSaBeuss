@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreClientsRequest;
 use App\Http\Requests\UpdateClientsRequest;
+use App\Models\CartePersonnalisee;
 use App\Models\Client;
+use Illuminate\Support\Facades\Auth;
 
 class ClientsController extends Controller
 {
@@ -63,4 +65,6 @@ class ClientsController extends Controller
     {
         //
     }
+
+
 }

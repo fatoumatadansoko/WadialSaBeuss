@@ -14,7 +14,7 @@ class Prestataire extends Model
 {
     use Notifiable;
     use HasFactory;
-    protected $fillable = ['user_id', 'categorie_prestataire_id', 'ninea'];
+    protected $fillable = ['user_id', 'categorie_prestataire_id', 'ninea','description'];
 
 // App\Models\Prestataire.php
 public function routeNotificationForMail()
@@ -45,5 +45,8 @@ public function routeNotificationForMail()
     {
         return $this->hasMany(DemandePrestation::class);
     }
-    
+    public function getMoyenneNoteAttribute()
+    {
+        return $this->commentaires()->avg('note');
+    }
 }

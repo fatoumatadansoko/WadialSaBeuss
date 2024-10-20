@@ -16,11 +16,9 @@ return new class extends Migration
             $table->string('nom');
             $table->string('email')->unique();
             $table->string('password');
-            $table->text('description');
             $table->string('adresse');
             $table->string('telephone')->unique();
             $table->string('logo');
-            $table->string('role')-> default('client');
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
             $table->rememberToken();
@@ -30,12 +28,14 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
+            
         });
 
         Schema::create('prestataires', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('categorie_prestataire_id');
+            $table->string('description');
             $table->string('ninea');
             $table->timestamps();
         });

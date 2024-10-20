@@ -14,7 +14,7 @@ class User extends Authenticatable implements JWTSubject
     use HasFactory, Notifiable, HasRoles;
 
     protected $fillable = [
-        'nom', 'email', 'password', 'description', 'adresse', 'status', 'telephone','role','logo',
+        'nom', 'email', 'password', 'adresse', 'status', 'telephone','role','logo',
     ];
 
     /**
@@ -29,10 +29,7 @@ class User extends Authenticatable implements JWTSubject
      * Relation avec le modèle Client.
      */
     
-        public function client()//+
-        {//+
-            return $this->hasOne(Client::class);//+
-        }//+
+      
 
     /**
      * Relation avec le modèle Admin.
@@ -40,6 +37,10 @@ class User extends Authenticatable implements JWTSubject
     public function admin()
     {
         return $this->hasOne(Admin::class);
+    }
+    public function cartesPersonnalisees()
+    {
+        return $this->hasMany(CartePersonnalisee::class);
     }
 
     /**
@@ -61,5 +62,8 @@ class User extends Authenticatable implements JWTSubject
     {
         return []; // vous pouvez ajouter des revendications personnalisées ici si nécessaire
     }
-    
+    public function client()
+    {
+        return $this->hasOne(Client::class, 'user_id');
+    }
 }

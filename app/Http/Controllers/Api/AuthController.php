@@ -3,13 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\User;
+use App\Models\Admin;
 use App\Models\Client;
 use App\Models\Prestataire;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth; // Pour Auth::attempt(), Auth::user(), etc.
+use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Facades\Validator;
+
 class AuthController extends Controller
 {
     // Register API - POST (name, email, password, role, etc.)
@@ -22,9 +24,8 @@ class AuthController extends Controller
             'password' => ['required', 'string', 'min:8'],
             'telephone' => ['required', 'string', 'max:15'],
             'adresse' => ['required', 'string', 'max:225'],
-            'description' => ['required', 'string', 'max:255'],
-            'logo' => ['required', 'file', 'mimes:jpeg,png,jpg', 'max:3048'],
-            'role' => ['required', 'string', 'in:client,prestataire'],
+            'logo' => ['required', 'file', 'mimes:jpeg,png,jpg', 'max:4048'],
+            'role' => ['nullable', 'string'],
         ]);
     
         // Vérifier si la validation échoue
@@ -44,8 +45,6 @@ class AuthController extends Controller
                 "password" => Hash::make($request->password),
                 "telephone" => $request->telephone,
                 "adresse" => $request->adresse,
-                "description" => $request->description,
-                "role" => $request->role,
             ];
     
             // Vérifier si un logo a été uploadé
@@ -62,10 +61,12 @@ class AuthController extends Controller
                 $prestataire = new Prestataire();
                 $prestataire->fill([
                     'user_id' => $user->id,
-                    'categorie_prestataire_id' => $request->categorie_prestataire_id,
+                    'categorie_prestataire_id' => json_encode($request->categorie_prestataire_id),
+                    // 'categorie_prestataire_id' => $request->categorie_prestataire_id,
                     'ninea' => $request->ninea,
+                    'description'=>$request->description,
                 ]);
-    
+                $user->assignrole('prestataire');
                 // Le logo est déjà traité dans l'utilisateur, donc inutile de le traiter de nouveau ici
                 $prestataire->save();
             } else {
@@ -73,6 +74,8 @@ class AuthController extends Controller
                     'user_id' => $user->id,
                     // Ajoute ici d'autres champs si nécessaire
                 ]);
+                $user->assignrole('client');
+
             }
     
             return response()->json([
@@ -97,35 +100,63 @@ class AuthController extends Controller
             "email" => "required|email",
             "password" => "required"
         ]);
-
+    
         // Tentative de connexion
-        $token = auth()->attempt([
+        $token = Auth::attempt([
             "email" => $request->email,
             "password" => $request->password
         ]);
-$user=auth()->user();
+    
+        // Récupérer l'utilisateur authentifié
+        $user = Auth::user();
+    
         // Vérification de la validité du token
         if (!$token) {
             return response()->json([
                 "status" => false,
-                "message" => "Email ou mot de pass incorrect"
+                "message" => "Email ou mot de passe incorrect"
             ], 401);
         }
-
-        return response()->json([
-            "status" => true,
-            "message" => "connexion reussi",
-            "token" => $token,
-            "user" => $user,
-            "expires_in" => auth()->factory()->getTTL() * 60
-        ]);
+        if($user->HasRole('client')){
+            $client = Client::where('user_id', $user->id)->first();
+            return response()->json([
+                "status" => true,
+                "message" => "Connexion réussie",
+                "token" => $token,
+                "user" => $user,
+                "client" => $client, // Ajoutez cette ligne pour renvoyer les rôles de l'utilisateur
+            ]);
+        }
+        if($user->HasRole('prestataire')){
+            $prestataire = Prestataire::where('user_id', $user->id)->first();
+            return response()->json([
+                "status" => true,
+                "message" => "Connexion réussie",
+                "token" => $token,
+                "user" => $user,
+                "prestataire" => $prestataire, // Ajoutez cette ligne pour renvoyer les rôles de l'utilisateur
+            ]);
+        }
+        // Renvoyer les rôles en plus de l'utilisateur et du token
+        if($user->HasRole('admin')){
+            $admin = Admin::where('user_id', $user->id)->first();
+            return response()->json([
+                "status" => true,
+                "message" => "Connexion réussie",
+                "token" => $token,
+                "user" => $user,
+                "admin" => $admin, // Ajoutez cette ligne pour renvoyer les rôles de l'utilisateur
+            ]);
+        }
+        // 
     }
+    
 
     // Profile API - GET (JWT Auth Token)
     public function profile()
     {
         // Récupération des informations de l'utilisateur connecté
-        $userData = auth()->user();
+        $userData = Auth::user();
 
         return response()->json([
             "status" => true,
@@ -137,7 +168,7 @@ $user=auth()->user();
     // Refresh Token API - GET (JWT Auth Token)
     public function refreshToken()
     {
-        $token = auth()->refresh();
+        $token = Auth::refresh();
 
         return response()->json([
             "status" => true,
@@ -151,7 +182,6 @@ $user=auth()->user();
     public function logout()
     {
         auth()->logout();
-
         return response()->json([
             "status" => true,
             "message" => "deconnexion réussi"

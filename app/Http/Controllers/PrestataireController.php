@@ -12,7 +12,9 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\DemandePrestation; // Ajoutez cette ligne en haut de votre fichier
 use App\Notifications\DemandeNotification;
 use Illuminate\Auth\Events\Validated;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class PrestataireController extends Controller
 {
@@ -138,30 +140,63 @@ class PrestataireController extends Controller
         }
     }
     
-public function getDemandesForPrestataire($prestataireId)
-{
-    try {
-        // Récupérer le prestataire avec ses demandes de prestations
-        $prestataire = Prestataire::with('demandes')->findOrFail($prestataireId);
-
-        // Vérifier si le prestataire a des demandes
-        if ($prestataire->demandes->isEmpty()) {
+    public function getDemandesForPrestataire($prestataireId)
+    {
+        try {
+            // Récupérer le prestataire avec ses demandes de prestations
+            $prestataire = Prestataire::with('demandes')->findOrFail($prestataireId);
+    
+            // Vérifier si le prestataire a des demandes
+            if ($prestataire->demandes->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Aucune demande trouvée pour ce prestataire.',
+                    'demandes' => [] // Ajoutez une clé pour les demandes vides
+                ], 404);
+            }
+    
+            return response()->json([
+                'success' => true,
+                'prestataire' => $prestataire,
+                'demandes' => $prestataire->demandes // Retournez les demandes
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['error' => 'Prestataire non trouvé : ' . $e->getMessage()], 404);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erreur lors de la récupération des demandes : ' . $e->getMessage()], 500);
+        }
+    }
+    public function getPrestatairesByRating()
+    {
+        try {
+            $prestataires = Prestataire::with('user')
+                ->withCount(['commentaires as moyenne_note' => function ($query) {
+                    $query->select(DB::raw('coalesce(avg(note),0)'));
+                }])
+                ->orderByDesc('moyenne_note')
+                ->get();
+    
+            // Log des prestataires trouvés
+            Log::info('Prestataires trouvés:', ['prestataires' => $prestataires]);
+    
+            if ($prestataires->isEmpty()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Aucun prestataire trouvé.',
+                ]);
+            }
+    
+            return response()->json([
+                'success' => true,
+                'data' => $prestataires,
+            ], 200);
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Aucune demande trouvée pour ce prestataire.',
-            ], 404);
+                'message' => 'Erreur lors de la récupération des prestataires.',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        return response()->json([
-            'success' => true,
-            'prestataire' => $prestataire,
-        ], 200);
-    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-        return response()->json(['error' => 'Prestataire non trouvé : ' . $e->getMessage()], 404);
-    } catch (\Exception $e) {
-        return response()->json(['error' => 'Erreur lors de la récupération des demandes : ' . $e->getMessage()], 500);
     }
-}
-
-
+    
 }

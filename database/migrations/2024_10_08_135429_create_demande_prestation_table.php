@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Schema;
     {
         public function up()
         {
-                Schema::create('demandeprestations', function (Blueprint $table) {
+                Schema::create('demande_prestations', function (Blueprint $table) {
                     $table->id();
                     $table->enum('etat', ['en_attente', 'approuve', 'rejete'])->default('en_attente');
                     $table->foreignId('prestataire_id')
