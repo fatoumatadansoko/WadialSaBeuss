@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreImageRequest;
-use App\Http\Requests\UpdateImageRequest;
-use App\Models\Image;
+use App\Http\Requests\StoreClientsRequest;
+use App\Http\Requests\UpdateClientsRequest;
+use App\Models\CartePersonnalisee;
+use App\Models\Client;
+use Illuminate\Support\Facades\Auth;
 
-class ImageController extends Controller
+class ClientsController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -27,7 +29,7 @@ class ImageController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreImageRequest $request)
+    public function store(StoreClientsRequest $request)
     {
         //
     }
@@ -35,7 +37,7 @@ class ImageController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Image $image)
+    public function show(Client $client)
     {
         //
     }
@@ -43,7 +45,7 @@ class ImageController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Image $image)
+    public function edit(Client $client)
     {
         //
     }
@@ -51,7 +53,7 @@ class ImageController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateImageRequest $request, Image $image)
+    public function update(UpdateClientsRequest $request, Client $client)
     {
         //
     }
@@ -59,8 +61,10 @@ class ImageController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Image $image)
+    public function destroy(Client $client)
     {
         //
     }
+
+
 }

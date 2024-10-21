@@ -5,62 +5,93 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCategorieRequest;
 use App\Http\Requests\UpdateCategorieRequest;
 use App\Models\Categorie;
+use Illuminate\Http\Request;
 
 class CategorieController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // Méthode pour récupérer toutes les catégories
     public function index()
     {
-        //
+        $categories = Categorie::all();
+        return response()->json([
+            'status' => true,
+            'message' => 'Catégories récupérées avec succès',
+            'data' => $categories
+        ], 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    // Méthode pour récupérer une catégorie spécifique
+    public function show($id)
     {
-        //
+        $categorie = Categorie::find($id);
+        if (!$categorie) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Catégorie non trouvée'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Catégorie récupérée avec succès',
+            'data' => $categorie
+        ], 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Méthode pour créer une nouvelle catégorie
     public function store(StoreCategorieRequest $request)
     {
-        //
+        $validated = $request->validated();
+
+        $categorie = Categorie::create([
+            'titre' => $validated['titre'],
+            'description' => $validated['description']
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Catégorie créée avec succès',
+            'data' => $categorie
+        ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Categorie $categorie)
+    // Méthode pour mettre à jour une catégorie existante
+    public function update(UpdateCategorieRequest $request, $id)
     {
-        //
+        $categorie = Categorie::find($id);
+        if (!$categorie) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Catégorie non trouvée'
+            ], 404);
+        }
+
+        $validated = $request->validated();
+        $categorie->update($validated);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Catégorie mise à jour avec succès',
+            'data' => $categorie
+        ], 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Categorie $categorie)
+    // Méthode pour supprimer une catégorie
+    public function destroy($id)
     {
-        //
-    }
+        $categorie = Categorie::find($id);
+        if (!$categorie) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Catégorie non trouvée'
+            ], 404);
+        }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateCategorieRequest $request, Categorie $categorie)
-    {
-        //
-    }
+        $categorie->delete();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Categorie $categorie)
-    {
-        //
+        return response()->json([
+            'status' => true,
+            'message' => 'Catégorie supprimée avec succès'
+        ], 200);
     }
 }

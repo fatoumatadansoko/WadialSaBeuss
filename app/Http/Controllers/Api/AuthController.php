@@ -2,92 +2,173 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\User;
-
+use App\Models\Admin;
+use App\Models\Client;
+use App\Models\Prestataire;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
-    // Register API - POST (name, email, password)
+    // Register API - POST (name, email, password, role, etc.)
     public function register(Request $request)
     {
-        $validator = validator($request->all(), [
-            'nom' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'telephone' => ['required', 'string', 'max:255'],
-            'adresse' => ['required', 'string', 'max:255'],
-            'status' => ['required', 'string','in:active,inactive'],
-            'description' => ['required', 'string', 'max:255'],
+        // Valider la requête
+        $validator = Validator::make($request->all(), [
+            'nom' => ['required', 'string', 'max:25'],
+            'email' => ['required', 'string', 'email', 'max:50', 'unique:users'],
+            'password' => ['required', 'string', 'min:8'],
+            'telephone' => ['required', 'string', 'max:15'],
+            'adresse' => ['required', 'string', 'max:225'],
+            'logo' => ['required', 'file', 'mimes:jpeg,png,jpg', 'max:4048'],
+            'role' => ['nullable', 'string'],
         ]);
+    
+        // Vérifier si la validation échoue
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation errors',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+    
+        try {
+            // Préparer les données de l'utilisateur
+            $userData = [
+                "nom" => $request->nom,
+                "email" => $request->email,
+                "password" => Hash::make($request->password),
+                "telephone" => $request->telephone,
+                "adresse" => $request->adresse,
+            ];
+    
+            // Vérifier si un logo a été uploadé
+            if ($request->hasFile('logo')) {
+                $logo = $request->file('logo');
+                $userData['logo'] = $logo->store('users', 'public');  // Enregistre le logo dans 'storage/app/public/users'
+            }
+    
+            // Créer un nouvel utilisateur
+            $user = User::create($userData);
+    
+            // Associer l'utilisateur au rôle
+            if ($request->role === 'prestataire') {
+                $prestataire = new Prestataire();
+                $prestataire->fill([
+                    'user_id' => $user->id,
+                    'categorie_prestataire_id' => json_encode($request->categorie_prestataire_id),
+                    // 'categorie_prestataire_id' => $request->categorie_prestataire_id,
+                    'ninea' => $request->ninea,
+                    'description'=>$request->description,
+                ]);
+                $user->assignrole('prestataire');
+                // Le logo est déjà traité dans l'utilisateur, donc inutile de le traiter de nouveau ici
+                $prestataire->save();
+            } else {
+                Client::create([
+                    'user_id' => $user->id,
+                    // Ajoute ici d'autres champs si nécessaire
+                ]);
+                $user->assignrole('client');
 
-        // User model to save user in database
-    User::create([
-        "nom" => $request->nom,  // Correction ici
-        "email" => $request->email,
-        "password" => bcrypt($request->password),
-        "telephone" => $request->telephone,
-        "adresse" => $request->adresse,
-        "status" => $request->status,
-        "description" => $request->description,
-    ]);
+            }
+    
+            return response()->json([
+                'status' => true,
+                'message' => 'Inscription réussi',
+                'user' => $user
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Erreur lors de l\'inscription: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
 
-    return response()->json([
-        "status" => true,
-        "message" => "User registered successfully",
-    ]);
-}
     // Login API - POST (email, password)
-    public function login(Request $request){
-
-        // Validation
+    public function login(Request $request)
+    {
+        // Validation des données de connexion
         $request->validate([
             "email" => "required|email",
             "password" => "required"
         ]);
-
-        $token = auth()->attempt([
+    
+        // Tentative de connexion
+        $token = Auth::attempt([
             "email" => $request->email,
             "password" => $request->password
         ]);
-
-        if(!$token){
-
+    
+        // Récupérer l'utilisateur authentifié
+        $user = Auth::user();
+    
+        // Vérification de la validité du token
+        if (!$token) {
             return response()->json([
                 "status" => false,
-                "message" => "Invalid login details"
+                "message" => "Email ou mot de passe incorrect"
+            ], 401);
+        }
+        if($user->HasRole('client')){
+            $client = Client::where('user_id', $user->id)->first();
+            return response()->json([
+                "status" => true,
+                "message" => "Connexion réussie",
+                "token" => $token,
+                "user" => $user,
+                "client" => $client, // Ajoutez cette ligne pour renvoyer les rôles de l'utilisateur
             ]);
         }
-
-        return response()->json([
-            "status" => true,
-            "message" => "User logged in succcessfully",
-            "token" => $token,
-            //"expires_in" => auth()->factory()->getTTL() * 60
-        ]);
-
+        if($user->HasRole('prestataire')){
+            $prestataire = Prestataire::where('user_id', $user->id)->first();
+            return response()->json([
+                "status" => true,
+                "message" => "Connexion réussie",
+                "token" => $token,
+                "user" => $user,
+                "prestataire" => $prestataire, // Ajoutez cette ligne pour renvoyer les rôles de l'utilisateur
+            ]);
+        }
+        // Renvoyer les rôles en plus de l'utilisateur et du token
+        if($user->HasRole('admin')){
+            $admin = Admin::where('user_id', $user->id)->first();
+            return response()->json([
+                "status" => true,
+                "message" => "Connexion réussie",
+                "token" => $token,
+                "user" => $user,
+                "admin" => $admin, // Ajoutez cette ligne pour renvoyer les rôles de l'utilisateur
+            ]);
+        }
+        // 
     }
+    
 
     // Profile API - GET (JWT Auth Token)
-    public function profile(){
-
-        //$userData = auth()->user();
-        $userData = request()->user();
+    public function profile()
+    {
+        // Récupération des informations de l'utilisateur connecté
+        $userData = Auth::user();
 
         return response()->json([
             "status" => true,
             "message" => "Profile data",
-            "data" => $userData,
-            //"user_id" => request()->user()->id,
-            //"email" => request()->user()->email
+            "data" => $userData
         ]);
     }
 
     // Refresh Token API - GET (JWT Auth Token)
-    public function refreshToken(){
-
-        $token = auth()->refresh();
+    public function refreshToken()
+    {
+        $token = Auth::refresh();
 
         return response()->json([
             "status" => true,
@@ -98,13 +179,12 @@ class AuthController extends Controller
     }
 
     // Logout API - GET (JWT Auth Token)
-    public function logout(){
-        
+    public function logout()
+    {
         auth()->logout();
-
         return response()->json([
             "status" => true,
-            "message" => "User logged out successfully"
+            "message" => "deconnexion réussi"
         ]);
     }
 }

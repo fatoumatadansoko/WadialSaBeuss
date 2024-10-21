@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('carte_personnalisees', function (Blueprint $table) {
             $table->id();
+            $table->string('nom');
+            $table->string('image');
+            $table->string('contenu');       
             $table->foreignId('carte_invitation_id')->constrained()->onDelete('cascade');
             $table->foreignId('client_id')->constrained()->onDelete('cascade');
             $table->timestamps();

@@ -8,7 +8,19 @@ use Illuminate\Database\Eloquent\Model;
 class Commentaire extends Model
 {
     use HasFactory;
-    protected $fillable = ['contenu', 'date_ajout'];
+    protected $fillable = ['contenu','note','user_id','prestataire_id'];
+    
+ // Relation vers le prestataire
+ public function prestataire()
+ {
+     return $this->belongsTo(Prestataire::class, 'prestataire_id');
+ }
+ 
+ // Relation vers le client qui a laissé le commentaire
+ public function client()
+ {
+     return $this->belongsTo(User::class, 'client_id');
+ }
 
 }
 

@@ -1,0 +1,90 @@
+.shadow-sm {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Légère ombre pour donner du relief */
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+}
+
+.dot {
+  height: 20px;
+  width: 15px;
+  background-color: green;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.dropdown-item.active {
+  background-color: transparent;
+  font-weight: bold;
+  color: purple; /* Couleur de sélection */
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa; /* Couleur au survol */
+}
+
+
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 0;
+}
+
+.card-container {
+  flex: 1 1 300px;
+  max-width: 300px;
+}
+
+.card {
+  margin-top: 10px;
+  width: 100%;
+  height: auto; /* Ajuster la hauteur automatiquement en fonction du contenu */
+  position: relative;
+  overflow: visible; /* Assurer que tout le contenu soit visible */
+}
+
+.card-content {
+  position: absolute;
+  top: 50%; 
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: white;
+  width: 80%;
+}
+
+.card img {
+  width: 100%;
+  height: auto; /* Laisser l'image ajuster sa propre hauteur */
+  object-fit: cover;
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-top: 10px;
+}
+
+/* Styles pour les icônes */
+.bi-pencil-square, .bi-send-fill, .bi-download {
+  font-size: 1.5rem;
+  color: rgb(77, 20, 20);
+  cursor: pointer;
+}
+
+/* Alignement des icônes */
+.icons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.icons i {
+  margin-right: 10px;
+}
+
+.icons i:last-child {
+  margin-right: 0;
+}

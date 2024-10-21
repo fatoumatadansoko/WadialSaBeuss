@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('clients', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('invites', function (Blueprint $table) {
+            $table->string('nom')->after('email'); // Ajoute la colonne 'nom' après la colonne 'email'
         });
     }
 
@@ -22,6 +21,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('clients');
+        Schema::table('invites', function (Blueprint $table) {
+            //
+            $table->dropColumn('nom'); // Supprime la colonne 'nom' si on fait un rollback
+
+        });
     }
 };
