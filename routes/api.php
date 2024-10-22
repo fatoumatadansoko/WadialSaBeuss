@@ -1,21 +1,16 @@
 <?php
 
 use App\Http\Controllers\PrestataireController;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
-use Spatie\Permission\Contracts\Role;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VoteController;
-use App\Http\Controllers\ImageController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\CategorieController;
 use App\Http\Controllers\EvenementController;
 use App\Http\Controllers\CommentaireController;
-use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\CarteInvitationController;
 use App\Http\Controllers\CartePersonnaliseeController;
 use App\Http\Controllers\CategoriePrestataireController;
-use App\Http\Controllers\ClientsController;
 
 // Routes publiques
 Route::get('/', function () {
@@ -119,4 +114,6 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::post('demande-prestation', [PrestataireController::class, 'demandePrestation']);
     Route::get('prestataires/{prestataireId}/demandes', [PrestataireController::class, 'getDemandesForPrestataire']);
     Route::get('/prestataires/rated', [PrestataireController::class, 'getPrestatairesByRating']);
-
+    Route::get('/user', [AuthController::class, 'getDetails']);
+    Route::post('/invitation/accepter/{id}', [CartePersonnaliseeController::class, 'accepterInvitation']);
+    Route::post('/invitation/refuser/{id}', [CartePersonnaliseeController::class, 'refuserInvitation']);

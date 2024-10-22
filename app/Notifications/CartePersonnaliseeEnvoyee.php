@@ -12,9 +12,11 @@ class CartePersonnaliseeEnvoyee extends Notification
     
         protected $cartePersonnalisee;
         protected $nomInvité; // Ajoute un attribut pour le nom de l'invité
+        protected $invite;
     
-        public function __construct($cartePersonnalisee, $nomInvité)
+        public function __construct($cartePersonnalisee, $nomInvité, $invite)
         {
+            $this->invite = $invite; // Stocker l'invité pour l'utiliser dans la vue
             $this->cartePersonnalisee = $cartePersonnalisee;
             $this->nomInvité = $nomInvité; // Stocke le nom de l'invité
         }

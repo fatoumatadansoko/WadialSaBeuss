@@ -140,32 +140,63 @@ class PrestataireController extends Controller
         }
     }
     
-    public function getDemandesForPrestataire($prestataireId)
-    {
-        try {
-            // Récupérer le prestataire avec ses demandes de prestations
-            $prestataire = Prestataire::with('demandes')->findOrFail($prestataireId);
-    
-            // Vérifier si le prestataire a des demandes
-            if ($prestataire->demandes->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Aucune demande trouvée pour ce prestataire.',
-                    'demandes' => [] // Ajoutez une clé pour les demandes vides
-                ], 404);
-            }
-    
-            return response()->json([
-                'success' => true,
-                'prestataire' => $prestataire,
-                'demandes' => $prestataire->demandes // Retournez les demandes
-            ], 200);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Prestataire non trouvé : ' . $e->getMessage()], 404);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Erreur lors de la récupération des demandes : ' . $e->getMessage()], 500);
+    public function getDemandesForPrestataire()
+{
+    try {
+        // Récupérer l'utilisateur authentifié (client)
+        $user = Auth::user();
+        dd($user); // Affiche les informations sur l'utilisateur connecté
+
+        if (!$user) {
+            return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
+
+        // Vérifier si l'utilisateur a le rôle de prestataire
+        if (!$user->hasRole('prestataire')) { // assuming you use a role system like Spatie
+            return response()->json(['error' => 'Utilisateur non autorisé'], 403);
+            dd('Rôle non prestataire'); // Vérifiez le rôle de l'utilisateur
+
+        }
+        
+
+        
+        // Récupérer le prestataire avec ses demandes de prestations
+        $prestataire = Prestataire::with(['demandes'])->get();
+
+        // Vérifier si le prestataire a été trouvé
+        if (!$prestataire) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Prestataire non trouvé.',
+            ], 404);
+        }
+
+        // Vérifier si le prestataire a des demandes
+        if ($prestataire->demandes->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Aucune demande trouvée pour ce prestataire.',
+                'demandes' => []
+            ], 404);
+        }
+
+        // Récupérer les clients associés aux demandes
+        $prestataire->client = $prestataire->demandes->map(function ($demande) {
+            return User::find($demande->user_id);
+        });
+
+        return response()->json([
+            'success' => true,
+            'prestataire' => $prestataire,
+            'demandes' => $prestataire->client,
+        ], 200);
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        return response()->json(['error' => 'Prestataire non trouvé : ' . $e->getMessage()], 404);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Erreur lors de la récupération des demandes : ' . $e->getMessage()], 500);
     }
+}
+
     public function getPrestatairesByRating()
     {
         try {

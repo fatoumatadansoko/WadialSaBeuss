@@ -106,8 +106,22 @@
                         </div>
                     </div>
                 </div>
+                {{-- <a href="{{ url('/invitation/accepter/' . $email) }}" class="btn btn-success">Accepter</a>
+                <a href="{{ url('/invitation/refuser/' . $email) }}" class="btn btn-danger">Refuser</a> --}}
 
-
+                {{-- <a href="{{ url('http://localhost:8000/invitation/accepter/' ) }}" class="btn btn-success">Accepter</a>
+                <a href="{{ url('http://localhost:8000/invitation/refuser/' ) }}" class="btn btn-danger">Refuser</a> --}}
+                <form action="{{ url('api/invitation/accepter/' . $invite->id) }}" method="POST" style="display: inline;">
+                    @csrf <!-- Inclure le token CSRF pour la sécurité -->
+                    <button type="submit" class="btn btn-success">Accepter</button>
+                </form>
+                
+                <form action="{{ url('api/invitation/refuser/' . $invite->id) }}" method="POST" style="display: inline;">
+                    @csrf <!-- Inclure le token CSRF pour la sécurité -->
+                    <button type="submit" class="btn btn-danger">Refuser</button>
+                </form>
+                
+            </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -228,34 +228,40 @@ public function createFromInvitation(Request $request, $id)
             'image' => $cartePersonnalisee->image, // Ajoutez l'image ici
             'contenu' => $cartePersonnalisee->contenu, // Ajoutez le contenu ici
         ];
+        
     
         // Parcourir les emails et envoyer la carte à chaque invité
         foreach ($request->invites as $invite) {
             $nom = $invite['nom'];
             $email = $invite['email'];
-    
+   // Enregistrer l'invité dans la base de données
+   $invite = Invite::create([
+    'carte_personnalisee_id' => $cartePersonnalisee->id,
+    'user_id' => Auth::id(), // Optionnel, si vous voulez lier l'invité à un utilisateur
+    'email' => $email,
+    'nom' => $nom, // N'oubliez pas d'ajouter le nom
+]);
             try {
-                Mail::send('emails.carte_personnalisee', array_merge($data, ['nom' => $nom]), function ($message) use ($email, $cartePersonnalisee, $nom) {
+                
+                Mail::send('emails.carte_personnalisee', array_merge($data, [
+                    'nom' => $nom,
+                    'email' => $email,
+                    'invite' => $invite, // Ajoutez cette ligne pour passer l'invité à la vue
+                ]), function ($message) use ($email, $cartePersonnalisee, $nom) {
                     $message->to($email)
                             ->subject('Vous avez reçu une carte personnalisée de ' . Auth::user()->nom);
-    
-                    // Ajouter l'image de la carte en pièce jointe si elle existe
+        
                     if ($cartePersonnalisee->image) {
                         $imagePath = storage_path('app/public/' . $cartePersonnalisee->image);
-                        $message->attach($imagePath, [
-                            'as' => 'carte_personnalisee.jpg', 
-                            'mime' => 'image/jpeg'
-                        ]);
+                        // Décommentez ceci si vous souhaitez joindre l'image
+                        // $message->attach($imagePath, [
+                        //     'as' => 'carte_personnalisee.jpg', 
+                        //     'mime' => 'image/jpeg'
+                        // ]);
                     }
                 });
-    
-                // Enregistrer l'invité dans la base de données
-                Invite::create([
-                    'carte_personnalisee_id' => $cartePersonnalisee->id,
-                    'user_id' => Auth::id(), // Optionnel, si vous voulez lier l'invité à un utilisateur
-                    'email' => $email,
-                    'nom' => $nom, // N'oubliez pas d'ajouter le nom
-                ]);
+        
+             
                 
             } catch (\Exception $e) {
                 return response()->json([
@@ -264,6 +270,7 @@ public function createFromInvitation(Request $request, $id)
                 ], 500);
             }
         }
+        
      
         return response()->json([
             'status' => true,
@@ -272,31 +279,34 @@ public function createFromInvitation(Request $request, $id)
     }
     
     
-public function afficherInvites($id)
-{
-    // Récupérer la carte personnalisée par son ID
-    $carte = CartePersonnalisee::find($id);
-    $user = Auth::user(); // Récupération de l'ID de l'utilisateur authentifié
-    $client = Client::where('user_id', $user->id)->first();
-
-  
-    // Vérifier si la carte existe
-    if (!$carte) {
-        return response()->json(['message' => 'Carte non trouvée'], 404);
-    } elseif ($carte->client_id !== $client->id) {
-        return response()->json(['message' => 'Carte non autorisée'], 403);
+    public function afficherInvites($id)
+    {
+        // Récupérer la carte personnalisée par son ID
+        $carte = CartePersonnalisee::find($id);
+        $user = Auth::user();
+        $client = Client::where('user_id', $user->id)->first();
+    
+        // Vérifier si la carte existe
+        if (!$carte) {
+            return response()->json(['message' => 'Carte non trouvée'], 404);
+        }
+    
+        // Vérifier si le client existe
+        if (!$client) {
+            return response()->json(['message' => 'Client non trouvé'], 404);
+        }
+    
+        // Vérifier si la carte appartient au client
+        if ($carte->client_id !== $client->id) {
+            return response()->json(['message' => 'Carte non autorisée'], 403);
+        }
+    
+        // Récupérer les invités associés à la carte
+        $invites = $carte->invites; // Récupère tous les invités avec toutes leurs informations
+    
+        return response()->json($invites, 200); // Retourne les données complètes des invités
     }
-
-    // Récupérer les invités associés à la carte
-    $invites = $carte->invites;
-
-    // Extraire les e-mails des invités
-    $emails = $invites->pluck('email'); // Utiliser pluck pour obtenir uniquement les e-mails
-
-    return response()->json($emails, 200); // Retourner uniquement les e-mails
-}
-
-
+    
 
 public function getCartesPersonnaliseesByClientId($id)
 {
@@ -326,6 +336,43 @@ public function getCartesPersonnaliseesByClientId($id)
         'data' => $cartes,
     ], 200);
 }
+public function accepterInvitation($id)
+{
+    // Trouver l'invité par son ID
+    $invite = Invite::find($id);
+
+    if (!$invite) {
+        return response()->json(['message' => 'Invitation non trouvée'], 404);
+    }
+
+    // Mettre à jour le statut de l'invité en "accepté"
+    $invite->statut = 1; // Passer à true pour accepté
+    $invite->save();
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Invitation accepté avec succes',
+    ], 200);
+}
+
+public function refuserInvitation($id)
+{
+    // Trouver l'invité par son ID
+    $invite = Invite::find($id);
+
+    if (!$invite) {
+        return response()->json(['message' => 'Invitation non trouvée'], 404);
+    }
+
+    // Mettre à jour le statut de l'invité en "refusé"
+    $invite->statut = 0; // Passer à false pour refusé
+    $invite->save();
+
+    // Rediriger vers une page de confirmation ou une autre page
+    return response()->json([
+        'status' => true,
+        'message' => 'Invitation refusée avec succes',
+    ], 200);}
 
 
 }
