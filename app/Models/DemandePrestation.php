@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
 
 class DemandePrestation extends Model
 {
-    use HasFactory;
+    use HasFactory,Notifiable;
 
     // Indiquer les attributs qui peuvent être remplis en masse
     protected $fillable = [
@@ -17,16 +18,15 @@ class DemandePrestation extends Model
         'etat',
     ];
 
-    // Définir la relation avec le modèle Prestataire
+    // Définir la relation avec le modèle Prestatair
     public function prestataire()
     {
-        return $this->belongsTo(Prestataire::class);
+        return $this->belongsTo(User::class, 'prestataire_id');
     }
-
-    // Définir la relation avec le modèle User (client)
+    
     public function client()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'user_id'); // Assurez-vous que 'user_id' correspond au modèle User
     }
-
+    
 }

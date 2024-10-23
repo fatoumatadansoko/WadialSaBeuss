@@ -15,6 +15,8 @@ use Illuminate\Auth\Events\Validated;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use App\Mail\DemandeStatusChanged;
+
 
 class PrestataireController extends Controller
 {
@@ -141,61 +143,52 @@ class PrestataireController extends Controller
     }
     
     public function getDemandesForPrestataire()
-{
-    try {
-        // Récupérer l'utilisateur authentifié (client)
-        $user = Auth::user();
-        dd($user); // Affiche les informations sur l'utilisateur connecté
-
-        if (!$user) {
-            return response()->json(['error' => 'Utilisateur non authentifié'], 401);
-        }
-
-        // Vérifier si l'utilisateur a le rôle de prestataire
-        if (!$user->hasRole('prestataire')) { // assuming you use a role system like Spatie
-            return response()->json(['error' => 'Utilisateur non autorisé'], 403);
-            dd('Rôle non prestataire'); // Vérifiez le rôle de l'utilisateur
-
-        }
-        
-
-        
-        // Récupérer le prestataire avec ses demandes de prestations
-        $prestataire = Prestataire::with(['demandes'])->get();
-
-        // Vérifier si le prestataire a été trouvé
-        if (!$prestataire) {
+    {
+        try {
+            // Récupérer l'utilisateur authentifié (prestataire)
+            $user = Auth::user();
+    
+            if (!$user) {
+                return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+            }
+    
+            // Vérifier si l'utilisateur a bien le rôle de prestataire
+            if (!$user->hasRole('prestataire')) {
+                return response()->json(['error' => 'Utilisateur non autorisé'], 403);
+            }
+    
+            // Récupérer le prestataire associé à cet utilisateur et ses demandes avec les clients (users)
+            $prestataire = Prestataire::where('user_id', $user->id)
+                ->with(['demandes.client']) // Charge la relation "client" sur chaque demande
+                ->first();
+    
+            if (!$prestataire) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Prestataire non trouvé.',
+                ], 404);
+            }
+    
+            // Si le prestataire n'a pas de demandes
+            if ($prestataire->demandes->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Aucune demande trouvée pour ce prestataire.',
+                    'demandes' => []
+                ], 404);
+            }
+    
             return response()->json([
-                'success' => false,
-                'message' => 'Prestataire non trouvé.',
-            ], 404);
+                'success' => true,
+                'prestataire' => $prestataire,
+                'demandes' => $prestataire->demandes, // Chaque demande aura le client (user) inclus
+            ], 200);
+    
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erreur lors de la récupération des demandes : ' . $e->getMessage()], 500);
         }
-
-        // Vérifier si le prestataire a des demandes
-        if ($prestataire->demandes->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Aucune demande trouvée pour ce prestataire.',
-                'demandes' => []
-            ], 404);
-        }
-
-        // Récupérer les clients associés aux demandes
-        $prestataire->client = $prestataire->demandes->map(function ($demande) {
-            return User::find($demande->user_id);
-        });
-
-        return response()->json([
-            'success' => true,
-            'prestataire' => $prestataire,
-            'demandes' => $prestataire->client,
-        ], 200);
-    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-        return response()->json(['error' => 'Prestataire non trouvé : ' . $e->getMessage()], 404);
-    } catch (\Exception $e) {
-        return response()->json(['error' => 'Erreur lors de la récupération des demandes : ' . $e->getMessage()], 500);
     }
-}
+       
 
     public function getPrestatairesByRating()
     {
@@ -229,5 +222,83 @@ class PrestataireController extends Controller
             ], 500);
         }
     }
+     // Accepter une demande
+     public function accepterDemande($demandeId)
+     {
+         try {
+             // Charger la demande avec les relations prestataire
+             $demande = DemandePrestation::with('prestataire')->findOrFail($demandeId);
+             $prestataire = $demande->prestataire; // Récupération du prestataire
+             $prestataireNom = $prestataire->nom; // Nom du prestataire
+     
+             // Vérification de l'état actuel de la demande
+             if ($demande->etat === 'approuve') {
+                 return response()->json(['error' => 'La demande est déjà approuvée'], 400);
+             }
+     
+             // Mise à jour de l'état de la demande à "approuvée"
+             $demande->etat = 'approuvée';
+             $demande->save();
+     
+             // Récupération de l'utilisateur (client) associé à la demande
+             $client = User::find($demande->user_id); // Récupération de l'utilisateur
+          
+             // Vérifiez que le client existe et a le rôle de client
+             if (!$client || !$client->hasRole('client')) {
+                 return response()->json(['error' => 'Client non trouvé ou rôle non valide'], 404);
+             }
+     
+             // Envoi d'un email de notification au client
+             Mail::to($client->email)->send(new DemandeStatusChanged($demande, $prestataireNom, $demande->etat));
+     
+             return response()->json([
+                 'success' => true,
+                 'message' => 'Demande approuvée avec succès',
+             ], 200);
+     
+         } catch (\Exception $e) {
+             return response()->json(['error' => 'Erreur lors de l\'acceptation de la demande : ' . $e->getMessage()], 500);
+         }
+     }
+     
+     
+     // Refuser une demande
+     public function refuserDemande($demandeId)
+     {
+         try {
+             $demande = DemandePrestation::with('client', 'prestataire')->find($demandeId);
+             $prestataire = $demande->prestataire;
+             $prestataireNom = $prestataire->nom;
+     
+             // Vérification de l'état actuel de la demande
+             if ($demande->etat === 'rejete') {
+                 return response()->json(['error' => 'La demande est déjà rejetée'], 400);
+             }
+     
+             // Mise à jour de l'état de la demande à "rejetée"
+             $demande->etat = 'rejetée';
+             $demande->save();
+     
+              // Récupération de l'utilisateur (client) associé à la demande
+              $client = User::find($demande->user_id); // Récupération de l'utilisateur
+          
+               // Vérifiez que le client existe et a le rôle de client
+             if (!$client || !$client->hasRole('client')) {
+                return response()->json(['error' => 'Client non trouvé ou rôle non valide'], 404);
+            }
     
+             // Envoi d'un email de notification au client
+             Mail::to($client->email)->send(new DemandeStatusChanged($demande, $prestataireNom, $demande->etat));
+     
+             return response()->json([
+                 'success' => true,
+                 'message' => 'Demande rejetée avec succès',
+             ], 200);
+     
+         } catch (\Exception $e) {
+             return response()->json(['error' => 'Erreur lors du rejet de la demande : ' . $e->getMessage()], 500);
+         }
+     }
+     
+     
 }

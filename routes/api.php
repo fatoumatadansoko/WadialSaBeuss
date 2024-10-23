@@ -112,8 +112,10 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('/prestataires/category/{id}', [PrestataireController::class, 'getPrestatairesByCategory']);
     Route::get('cartes', [CarteInvitationController::class, 'index']);
     Route::post('demande-prestation', [PrestataireController::class, 'demandePrestation']);
-    Route::get('prestataires/{prestataireId}/demandes', [PrestataireController::class, 'getDemandesForPrestataire']);
+    Route::get('/prestataires/{prestataireId}/demandes', [PrestataireController::class, 'getDemandesForPrestataire']);
     Route::get('/prestataires/rated', [PrestataireController::class, 'getPrestatairesByRating']);
     Route::get('/user', [AuthController::class, 'getDetails']);
     Route::post('/invitation/accepter/{id}', [CartePersonnaliseeController::class, 'accepterInvitation']);
     Route::post('/invitation/refuser/{id}', [CartePersonnaliseeController::class, 'refuserInvitation']);
+    Route::put('/prestataires/demandes/{demandeId}/accepter', [PrestataireController::class, 'accepterDemande']);
+    Route::put('/prestataires/demandes/{demandeId}/refuser', [PrestataireController::class, 'refuserDemande']);
