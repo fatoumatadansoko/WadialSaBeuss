@@ -27,13 +27,12 @@ class EvenementController extends Controller
     public function getAllEvents()
 {
     // Vérifier si l'utilisateur connecté est un administrateur
-    if (Auth::user()->role !== 'admin') {
+    if (!Auth::user()->hasRole('admin')) {
         return response()->json([
             'status' => false,
-            'message' => 'Accès refusé',
+            'message' => 'Utilisateur non autorisé',
         ], 403);
     }
-
     // Récupérer tous les événements
     $evenements = Evenement::all();
 

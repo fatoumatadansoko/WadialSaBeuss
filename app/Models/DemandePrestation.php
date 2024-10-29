@@ -21,7 +21,7 @@ class DemandePrestation extends Model
     // Définir la relation avec le modèle Prestatair
     public function prestataire()
     {
-        return $this->belongsTo(User::class, 'prestataire_id');
+        return $this->belongsTo(Prestataire::class, 'prestataire_id');
     }
     
     public function client()

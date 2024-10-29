@@ -46,7 +46,7 @@ class PrestataireController extends Controller
         return response()->json($prestataire, 201);
     }
     // Méthode pour récupérer un prestataire et ses commentaires
-    public function show($id)
+    public function listeprestataires($id)
     {
         // Récupérer le prestataire par ID avec ses commentaires
         $prestataire = Prestataire::with(['commentaires','user'])->find($id);
@@ -54,7 +54,7 @@ class PrestataireController extends Controller
         if (!$prestataire) {
             return response()->json([
                 'status' => false,
-                'message' => 'Prestataire non trouvé'
+                'message' => 'Prestataire non trouvé ici'
             ], 404);
         }
 
@@ -200,105 +200,114 @@ class PrestataireController extends Controller
                 ->orderByDesc('moyenne_note')
                 ->get();
     
-            // Log des prestataires trouvés
-            Log::info('Prestataires trouvés:', ['prestataires' => $prestataires]);
-    
+            // Vérifier si des prestataires ont été trouvés
             if ($prestataires->isEmpty()) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Aucun prestataire trouvé.',
-                ]);
+                    'message' => 'Aucun prestataire trouvé.'
+                ], 404);
             }
     
             return response()->json([
-                'success' => true,
-                'data' => $prestataires,
+                'status' => true,
+                'data' => $prestataires
             ], 200);
+    
         } catch (\Exception $e) {
             return response()->json([
-                'success' => false,
+                'status' => false,
                 'message' => 'Erreur lors de la récupération des prestataires.',
-                'error' => $e->getMessage(),
+                'error' => $e->getMessage()
             ], 500);
         }
     }
      // Accepter une demande
      public function accepterDemande($demandeId)
-     {
-         try {
-             // Charger la demande avec les relations prestataire
-             $demande = DemandePrestation::with('prestataire')->findOrFail($demandeId);
-             $prestataire = $demande->prestataire; // Récupération du prestataire
-             $prestataireNom = $prestataire->nom; // Nom du prestataire
-     
-             // Vérification de l'état actuel de la demande
-             if ($demande->etat === 'approuve') {
-                 return response()->json(['error' => 'La demande est déjà approuvée'], 400);
-             }
-     
-             // Mise à jour de l'état de la demande à "approuvée"
-             $demande->etat = 'approuvée';
-             $demande->save();
-     
-             // Récupération de l'utilisateur (client) associé à la demande
-             $client = User::find($demande->user_id); // Récupération de l'utilisateur
-          
-             // Vérifiez que le client existe et a le rôle de client
-             if (!$client || !$client->hasRole('client')) {
-                 return response()->json(['error' => 'Client non trouvé ou rôle non valide'], 404);
-             }
-     
-             // Envoi d'un email de notification au client
-             Mail::to($client->email)->send(new DemandeStatusChanged($demande, $prestataireNom, $demande->etat));
-     
-             return response()->json([
-                 'success' => true,
-                 'message' => 'Demande approuvée avec succès',
-             ], 200);
-     
-         } catch (\Exception $e) {
-             return response()->json(['error' => 'Erreur lors de l\'acceptation de la demande : ' . $e->getMessage()], 500);
-         }
-     }
-     
-     
-     // Refuser une demande
-     public function refuserDemande($demandeId)
-     {
-         try {
-             $demande = DemandePrestation::with('client', 'prestataire')->find($demandeId);
-             $prestataire = $demande->prestataire;
-             $prestataireNom = $prestataire->nom;
-     
-             // Vérification de l'état actuel de la demande
-             if ($demande->etat === 'rejete') {
-                 return response()->json(['error' => 'La demande est déjà rejetée'], 400);
-             }
-     
-             // Mise à jour de l'état de la demande à "rejetée"
-             $demande->etat = 'rejetée';
-             $demande->save();
-     
-              // Récupération de l'utilisateur (client) associé à la demande
-              $client = User::find($demande->user_id); // Récupération de l'utilisateur
-          
-               // Vérifiez que le client existe et a le rôle de client
-             if (!$client || !$client->hasRole('client')) {
-                return response()->json(['error' => 'Client non trouvé ou rôle non valide'], 404);
-            }
-    
-             // Envoi d'un email de notification au client
-             Mail::to($client->email)->send(new DemandeStatusChanged($demande, $prestataireNom, $demande->etat));
-     
-             return response()->json([
-                 'success' => true,
-                 'message' => 'Demande rejetée avec succès',
-             ], 200);
-     
-         } catch (\Exception $e) {
-             return response()->json(['error' => 'Erreur lors du rejet de la demande : ' . $e->getMessage()], 500);
-         }
-     }
+{
+    try {
+        // Charger la demande avec toutes les relations nécessaires
+        $demande = DemandePrestation::with(['prestataire.user', 'client'])
+            ->findOrFail($demandeId);
+            $prestataireNom = $demande->prestataire->user->nom ?? 'Prestataire inconnu';
+
+
+        // Vérification de l'état actuel de la demande
+        if ($demande->etat === 'approuve') {
+            return response()->json(['error' => 'La demande est déjà approuvée'], 400);
+        }
+
+        // Mise à jour de l'état de la demande
+        $demande->etat = 'approuvée';
+        $demande->save();
+
+        // Récupération du client directement via la relation
+        $client = $demande->client;
+
+        // Vérification du client
+        if (!$client || !$client->hasRole('client')) {
+            return response()->json(['error' => 'Client non trouvé ou rôle non valide'], 404);
+        }
+
+        // Envoi de l'email
+        Mail::to($client->email)->send(new DemandeStatusChanged(
+            $demande, 
+            $prestataireNom,
+            $demande->etat
+        ));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Demande approuvée avec succès',
+        ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Erreur lors de l\'acceptation de la demande : ' . $e->getMessage()], 500);
+    }
+}
+
+public function refuserDemande($demandeId)
+{
+    try {
+        // Utiliser findOrFail au lieu de find
+        $demande = DemandePrestation::with(['prestataire.user', 'client'])
+            ->findOrFail($demandeId);
+
+            $prestataireNom = $demande->prestataire->user->nom ?? 'Prestataire inconnu';
+
+        // Vérification de l'état actuel de la demande
+        if ($demande->etat === 'rejete') {
+            return response()->json(['error' => 'La demande est déjà rejetée'], 400);
+        }
+
+        // Mise à jour de l'état de la demande
+        $demande->etat = 'rejetée';
+        $demande->save();
+
+        // Récupération du client directement via la relation
+        $client = $demande->client;
+
+        // Vérification du client
+        if (!$client || !$client->hasRole('client')) {
+            return response()->json(['error' => 'Client non trouvé ou rôle non valide'], 404);
+        }
+
+        // Envoi de l'email
+        Mail::to($client->email)->send(new DemandeStatusChanged(
+            $demande,
+            $prestataireNom, // Assurez-vous que c'est le bon champ pour le nom
+            $demande->prestataire->user->name, // Assurez-vous que c'est le bon champ pour le nom
+            $demande->etat
+        ));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Demande rejetée avec succès',
+        ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Erreur lors du rejet de la demande : ' . $e->getMessage()], 500);
+    }
+}
      
      
 }

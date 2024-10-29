@@ -33,7 +33,6 @@ class CarteInvitationController extends Controller
             // Ajouter l'ID du client manuellement (l'utilisateur connecté)
             $data = $request->all();
             $data['user_id'] = Auth::id();
-
             // Gestion de l'image
             if ($request->hasFile('image')) {
                 $imagePath = $request->file('image')->store('cartes_invitations', 'public'); // Stockage dans le répertoire 'cartes_invitations'

@@ -45,7 +45,7 @@ public function routeNotificationForMail()
     {
         return $this->hasMany(DemandePrestation::class);
     }
-    public function getMoyenneNoteAttribute()
+    public function getPrestatairesByRating()
     {
         return $this->commentaires()->avg('note');
     }
