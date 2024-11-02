@@ -46,7 +46,7 @@ class PrestataireController extends Controller
         return response()->json($prestataire, 201);
     }
     // Méthode pour récupérer un prestataire et ses commentaires
-    public function listeprestataires($id)
+    public function show($id)
     {
         // Récupérer le prestataire par ID avec ses commentaires
         $prestataire = Prestataire::with(['commentaires','user'])->find($id);
