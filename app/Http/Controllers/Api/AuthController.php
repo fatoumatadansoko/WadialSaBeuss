@@ -8,9 +8,12 @@ use App\Models\Client;
 use App\Models\Prestataire;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth; 
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class AuthController extends Controller
 {
@@ -157,11 +160,14 @@ class AuthController extends Controller
     {
         // Récupération des informations de l'utilisateur connecté
         $userData = Auth::user();
-
+        $roles=$userData->getRoleNames();
         return response()->json([
             "status" => true,
             "message" => "Profile data",
-            "data" => $userData
+            "data" => $userData,
+            "roles"=>$roles
+            
+
         ]);
     }
 
@@ -177,7 +183,116 @@ class AuthController extends Controller
             //"expires_in" => auth()->factory()->getTTL() * 60
         ]);
     }
-
+  
+    public function updateProfile(Request $request)
+    {
+        try {
+            // Récupérer l'utilisateur connecté
+            $user = Auth::user();
+            
+            // Règles de validation de base
+            $validationRules = [];
+            
+            // Ajouter des règles uniquement pour les champs présents dans la requête
+            if ($request->has('nom')) {
+                $validationRules['nom'] = 'required|string|max:25';
+            }
+            if ($request->has('email')) {
+                $validationRules['email'] = 'required|email|unique:users,email,' . $user->id;
+            }
+            if ($request->has('telephone')) {
+                $validationRules['telephone'] = 'required|string|max:15';
+            }
+            if ($request->has('adresse')) {
+                $validationRules['adresse'] = 'required|string|max:225';
+            }
+            if ($request->hasFile('logo')) {
+                $validationRules['logo'] = 'image|mimes:jpeg,png,jpg|max:4048';
+            }
+            
+            // Valider uniquement les champs fournis
+            $validator = Validator::make($request->all(), $validationRules);
+            
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Erreur de validation',
+                    'error' => $validator->errors()->first()
+                ], 422);
+            }
+    
+            // Mettre à jour uniquement les champs fournis
+            if ($request->has('nom')) {
+                $user->nom = $request->nom;
+            }
+            if ($request->has('email')) {
+                $user->email = $request->email;
+            }
+            if ($request->has('telephone')) {
+                $user->telephone = $request->telephone;
+            }
+            if ($request->has('adresse')) {
+                $user->adresse = $request->adresse;
+            }
+    
+            // Gérer le logo si fourni
+            if ($request->hasFile('logo')) {
+                $logo = $request->file('logo');
+                $user->logo = $logo->store('users', 'public');
+            }
+    
+            // Si un nouveau mot de passe est fourni
+            if ($request->filled('password')) {
+                $user->password = Hash::make($request->password);
+            }
+    
+            $user->save();
+    
+            // Gérer les informations spécifiques au prestataire
+            if ($user->hasRole('prestataire')) {
+                $prestataire = Prestataire::where('user_id', $user->id)->first();
+                if ($prestataire && $request->filled('description')) {
+                    $prestataire->description = $request->description;
+                    $prestataire->save();
+                }
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Profil mis à jour avec succès',
+                    'data' => [
+                        'user' => $user,
+                        'prestataire' => $prestataire
+                    ]
+                ]);
+            }
+    
+            // Gérer les informations spécifiques au client
+            if ($user->hasRole('client')) {
+                $client = Client::where('user_id', $user->id)->first();
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Profil mis à jour avec succès',
+                    'data' => [
+                        'user' => $user,
+                        'client' => $client
+                    ]
+                ]);
+            }
+    
+            return response()->json([
+                'status' => true,
+                'message' => 'Profil mis à jour avec succès',
+                'data' => [
+                    'user' => $user
+                ]
+            ]);
+    
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Erreur lors de la mise à jour du profil',
+                'error' => $e->getMessage()
+            ], 500);
+        }}
     // Logout API - GET (JWT Auth Token)
     public function logout()
     {

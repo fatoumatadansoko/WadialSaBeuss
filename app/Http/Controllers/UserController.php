@@ -38,12 +38,7 @@ class UserController extends Controller
         return response()->json($user, 201);
     }
 
-    public function update(Request $request, $id)
-    {
-        $user = User::find($id);
-        $user->update($request->all());
-        return response()->json($user);
-    }
+   
 
     public function destroy($id)
     {
@@ -60,4 +55,21 @@ class UserController extends Controller
 
         return response()->json(['message' => 'Unauthorized'], 401);
     }
+    public function getUser(Request $request) {
+        $user = $request->user();
+    
+        // Vérification pour s'assurer que l'utilisateur est authentifié
+        if (!$user) {
+            return response()->json(['message' => 'Non authentifié'], 401);
+        }
+    
+        // Charger le rôle de l'utilisateur
+        $userRole = $user->role; // Assurez-vous que le champ 'role' est bien présent dans le modèle User
+    
+        return response()->json([
+            'user' => $user,
+            'role' => $userRole,
+        ]);
+    }
+    
 }

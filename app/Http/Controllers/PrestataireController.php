@@ -4,17 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Mail\DemandePrestationClientMail;
 use App\Mail\DemandePrestationPrestataireMail;
-use App\Mail\Prestation;
-use App\Models\User;
 use App\Models\Prestataire;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\DemandePrestation; // Ajoutez cette ligne en haut de votre fichier
-use App\Notifications\DemandeNotification;
-use Illuminate\Auth\Events\Validated;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Log;
 use App\Mail\DemandeStatusChanged;
 
 
