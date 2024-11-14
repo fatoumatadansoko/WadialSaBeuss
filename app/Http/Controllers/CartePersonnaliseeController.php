@@ -203,23 +203,14 @@ public function createFromInvitation(Request $request, $id)
             ], 401);
         }
     
-        // Validation mise à jour pour gérer les fichiers
-        $validator = Validator::make($request->all(), [
+        $userName = $user->nom;
+    
+        $request->validate([
             'invites' => 'required|array',
             'invites.*.nom' => 'required|string',
-            'invites.*.email' => 'required|email',
-            'invites.*.pdf' => 'required|file|mimes:pdf|max:10240', // max 10MB
+            'invites.*.email' => 'required|email'
         ]);
     
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-    
-        // Récupérer la carte personnalisée
         $cartePersonnalisee = CartePersonnalisee::find($id);
         if (!$cartePersonnalisee) {
             return response()->json([
@@ -228,52 +219,45 @@ public function createFromInvitation(Request $request, $id)
             ], 404);
         }
     
-        $results = [];
-        foreach ($request->invites as $index => $inviteData) {
+        $data = [
+            'carte' => $cartePersonnalisee,
+            'image' => $cartePersonnalisee->image,
+            'contenu' => $cartePersonnalisee->contenu,
+            
+        ];
+    
+        foreach ($request->invites as $invite) {
+            $nom = $invite['nom'];
+            $email = $invite['email'];
+            
+    
+            $invite = Invite::create([
+                'carte_personnalisee_id' => $cartePersonnalisee->id,
+                'user_id' => Auth::id(),
+                'email' => $email,
+                'nom' => $nom
+            ]);
+    
+            $data['nom'] = $nom;
+            $data['invite'] = $invite;
+            
+    
             try {
-                // Gérer le fichier PDF
-                $pdfFile = $request->file("invites.{$index}.pdf");
-                $pdfPath = $pdfFile->store('invitations', 'public');
-    
-                // Enregistrer l'invité
-                $invite = Invite::create([
-                    'carte_personnalisee_id' => $cartePersonnalisee->id,
-                    'user_id' => $user->id,
-                    'email' => $inviteData['email'],
-                    'nom' => $inviteData['nom'],
-                    'pdf_path' => $pdfPath
-                ]);
-    
-                // Envoyer l'email
-                Mail::send('emails.carte_personnalisee', 
-                    ['carte' => $cartePersonnalisee, 'nom' => $inviteData['nom'], 'invite' => $invite], 
-                    function ($message) use ($inviteData, $user, $pdfFile) {
-                        $message->to($inviteData['email'])
-                            ->subject('Vous avez reçu une carte personnalisée de ' . $user->name)
-                            ->attach($pdfFile->getRealPath(), [
-                                'as' => 'invitation.pdf',
-                                'mime' => 'application/pdf'
-                            ]);
-                    }
-                );
-    
-                $results[] = [
-                    'email' => $inviteData['email'],
-                    'status' => 'success'
-                ];
+                Mail::send('emails.carte_personnalisee', $data, function ($message) use ($email, $cartePersonnalisee, $userName) {
+                    $message->to($email)
+                        ->subject("Vous avez reçu une carte personnalisée de " . $userName);
+                });
             } catch (\Exception $e) {
-                $results[] = [
-                    'email' => $inviteData['email'],
-                    'status' => 'error',
-                    'message' => $e->getMessage()
-                ];
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Erreur lors de l\'envoi de l\'email à ' . $email . ': ' . $e->getMessage()
+                ], 500);
             }
         }
     
         return response()->json([
             'status' => true,
-            'message' => 'Cartes envoyées',
-            'results' => $results
+            'message' => 'Carte personnalisée envoyée avec succès aux invités.'
         ], 200);
     }
 
