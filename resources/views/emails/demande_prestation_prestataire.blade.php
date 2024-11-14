@@ -9,8 +9,6 @@
 
     <p>Vous avez reçu une nouvelle demande de prestation de la part de {{ $client->nom }}.</p>
 
-    <p>Message du client : {{ $client->message }}</p>
-
     <p>Veuillez prendre contact avec le client pour plus de détails.</p>
 
     <p>Cordialement,</p>
