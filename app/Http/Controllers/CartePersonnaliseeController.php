@@ -13,6 +13,8 @@ use App\Models\Client;
 use Illuminate\Routing\ResponseFactory;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+
 
 class CartePersonnaliseeController extends Controller
 {
@@ -193,74 +195,116 @@ public function createFromInvitation(Request $request, $id)
     }
     
     // Dans le contrôleur
+   
     public function envoyerCarte(Request $request, $id)
     {
-        $user = Auth::user();
-        if (!$user) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Utilisateur non authentifié.'
-            ], 401);
-        }
-    
-        $userName = $user->nom;
-    
-        $request->validate([
-            'invites' => 'required|array',
-            'invites.*.nom' => 'required|string',
-            'invites.*.email' => 'required|email'
-        ]);
-    
-        $cartePersonnalisee = CartePersonnalisee::find($id);
-        if (!$cartePersonnalisee) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Carte personnalisée non trouvée'
-            ], 404);
-        }
-    
-        $data = [
-            'carte' => $cartePersonnalisee,
-            'image' => $cartePersonnalisee->image,
-            'contenu' => $cartePersonnalisee->contenu,
-            
-        ];
-    
-        foreach ($request->invites as $invite) {
-            $nom = $invite['nom'];
-            $email = $invite['email'];
-            
-    
-            $invite = Invite::create([
-                'carte_personnalisee_id' => $cartePersonnalisee->id,
-                'user_id' => Auth::id(),
-                'email' => $email,
-                'nom' => $nom
+        try {
+            // Log des données reçues
+            \Log::info('Début envoi carte:', [
+                'id' => $id,
+                'invites' => $request->invites
             ]);
     
-            $data['nom'] = $nom;
-            $data['invite'] = $invite;
-            
-    
-            try {
-                Mail::send('emails.carte_personnalisee', $data, function ($message) use ($email, $cartePersonnalisee, $userName) {
-                    $message->to($email)
-                        ->subject("Vous avez reçu une carte personnalisée de " . $userName);
-                });
-            } catch (\Exception $e) {
+            // Validation de base
+            $user = Auth::user();
+            if (!$user) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Erreur lors de l\'envoi de l\'email à ' . $email . ': ' . $e->getMessage()
-                ], 500);
+                    'message' => 'Utilisateur non authentifié.'
+                ], 401);
             }
-        }
     
-        return response()->json([
-            'status' => true,
-            'message' => 'Carte personnalisée envoyée avec succès aux invités.'
-        ], 200);
+            $request->validate([
+                'invites' => 'required|array',
+                'invites.*.nom' => 'required|string',
+                'invites.*.email' => 'required|email'
+            ]);
+    
+            $cartePersonnalisee = CartePersonnalisee::findOrFail($id);
+            
+            // Log des infos de la carte
+            \Log::info('Carte trouvée:', [
+                'id' => $cartePersonnalisee->id,
+                'image' => $cartePersonnalisee->image,
+                'contenu' => $cartePersonnalisee->contenu
+            ]);
+    
+            $successCount = 0;
+            $failureCount = 0;
+            $errors = [];
+    
+            foreach ($request->invites as $invite) {
+                try {
+                    \Log::info('Traitement de l\'invité:', $invite);
+    
+                    // Générer un token unique pour l'invitation
+                    $invitationToken = Str::uuid();
+    
+                    // Préparer les données pour l'email
+                    $imageUrl = Storage::url($cartePersonnalisee->image);
+                    $emailData = [
+                        'nom' => $invite['nom'],
+                        'carte' => $cartePersonnalisee,
+                        'token' => $invitationToken,
+                        'image' => $imageUrl
+                    ];
+    
+                    // Créer l'enregistrement de l'invité avec le token
+                    $inviteModel = Invite::create([
+                        'carte_personnalisee_id' => $cartePersonnalisee->id,
+                        'user_id' => $user->id,
+                        'email' => $invite['email'],
+                        'nom' => $invite['nom'],
+                        'invitation_token' => $invitationToken,
+                        'statut' => 'en_attente'
+                    ]);
+    
+                    \Log::info('Invité créé:', ['id' => $inviteModel->id]);
+    
+                    // Envoyer l'email
+                    Mail::send('emails.carte_personnalisee', 
+                        $emailData,
+                        function ($message) use ($invite, $user) {
+                            $message->to($invite['email'])
+                                   ->subject("Invitation de " . $user->nom);
+                        }
+                    );
+    
+                    $successCount++;
+                    \Log::info('Email envoyé avec succès à: ' . $invite['email']);
+    
+                } catch (\Exception $e) {
+                    $errorMessage = 'Erreur lors de l\'envoi à ' . $invite['email'] . ': ' . $e->getMessage();
+                    \Log::error($errorMessage);
+                    \Log::error('Trace: ' . $e->getTraceAsString());
+                    $errors[] = $errorMessage;
+                    $failureCount++;
+                }
+            }
+    
+            $message = "Invitations envoyées : $successCount réussies";
+            if ($failureCount > 0) {
+                $message .= ", $failureCount échecs";
+                $message .= "\nErreurs : " . implode("\n", $errors);
+            }
+    
+            return response()->json([
+                'status' => true,
+                'message' => $message,
+                'details' => $errors
+            ], 200);
+    
+        } catch (\Exception $e) {
+            \Log::error('Erreur envoyerCarte: ' . $e->getMessage());
+            \Log::error('Trace: ' . $e->getTraceAsString());
+            return response()->json([
+                'status' => false,
+                'message' => 'Erreur lors de l\'envoi : ' . $e->getMessage(),
+                'details' => $e->getTraceAsString()
+            ], 500);
+        }
     }
-
+    
     public function afficherInvites($id)
     {
         // Récupérer la carte personnalisée par son ID

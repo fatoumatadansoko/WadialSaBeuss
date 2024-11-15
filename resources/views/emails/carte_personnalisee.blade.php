@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https://res.cloudinary.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https://res.cloudinary.com data:; style-src 'self' 'unsafe-inline' https://stackpath.bootstrapcdn.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' https://code.jquery.com https://cdn.jsdelivr.net;">
     <title>Invitation</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Royal+Luxurious&display=swap" rel="stylesheet">
@@ -45,45 +46,37 @@
         }
     </style>
 </head>
-            <body class="bg-light">
-                <div class="container mt-5">
-                    <h1 class="h4">Invitation !</h1>
-                    <h6>Nous avons le plaisir de vous inviter à notre cérémonie.</h6>
-                    <div class="card">
-                        <div class="card-content">
-                            <div class="card-content">
-                            <p>{{ $carte->contenu }}</p> <!-- Contenu de la carte -->
-                            <p class="invitation-name fw-bold">{{ $nom }}</p> <!-- Nom de l'invité affiché ici -->
-                            
-                            <div class="background-image" style="background-image: url('https://res.cloudinary.com/dodvioas8/image/upload/v1731505407/FREE_Printable_-_Classy_Pink_and_Blue_Floral_Bridal_Shower_Invitation_Templates___Beeshower_gio4ts.jpg');">
-                            </div>
-                            </div>
-                            <div class="card-content">
-                                <p>On serait ravi de vous compter parmi les invités.</p>
-                                <p>Merci d'accepter ou refuser l'invitation (en cliquant sur les boutons ci-dessous) pour vous inscrire à la cérémonie.</p>
-
-    
-                        </div>
-                        </div>
-                    </div>
+<body class="bg-light">
+    <div class="container mt-5">
+        <h1 class="h4">Invitation !</h1>
+        <div class="card">
+            <div class="card-content">
+                <div class="card-content">
+                    <p>{{ $carte->contenu }}</p>
+                    <p class="invitation-name fw-bold">{{ $nom }}</p>
+                    
+                    {{-- <img src="{{ $image }}" class="carte-image" alt="Image de la carte" onerror="this.onerror=null; this.src='{{ asset($image) }}';"> --}}
                 </div>
-                {{-- <a href="{{ url('/invitation/accepter/' . $email) }}" class="btn btn-success">Accepter</a>
-                <a href="{{ url('/invitation/refuser/' . $email) }}" class="btn btn-danger">Refuser</a> --}}
-
-                {{-- <a href="{{ url('http://localhost:8000/invitation/accepter/' ) }}" class="btn btn-success">Accepter</a>
-                <a href="{{ url('http://localhost:8000/invitation/refuser/' ) }}" class="btn btn-danger">Refuser</a> --}}
-                <form action="{{ url('api/invitation/accepter/' . $invite->id) }}" method="POST" style="display: inline;">
-                    @csrf <!-- Inclure le token CSRF pour la sécurité -->
-                    <button type="submit" class="btn btn-success">Accepter</button>
-                </form>
-                
-                <form action="{{ url('api/invitation/refuser/' . $invite->id) }}" method="POST" style="display: inline;">
-                    @csrf <!-- Inclure le token CSRF pour la sécurité -->
-                    <button type="submit" class="btn btn-danger">Refuser</button>
-                </form>
-                
             </div>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <p><a href="{{ url('api/cartes-personnalisees/{id}/' . $token) }}">Télécharger ma carte d'invitation</a></p>
+
+        </div>
+    </div>
+
+    @if(isset($token))
+        <form action="{{ url('api/invitation/accepter/' . $token) }}" method="POST" style="display: inline;">
+            @csrf
+            <button type="submit" class="btn btn-success">Accepter</button>
+        </form>
+        
+        <form action="{{ url('api/invitation/refuser/' . $token) }}" method="POST" style="display: inline;">
+            @csrf
+            <button type="submit" class="btn btn-danger">Refuser</button>
+        </form>
+    @endif
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+              
 </html>

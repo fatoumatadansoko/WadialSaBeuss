@@ -68,7 +68,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::delete('votes/{id}', [VoteController::class, 'destroy']);
     Route::get('/cartes-personnalisees', [CartePersonnaliseeController::class, 'index']);
     Route::post('/cartes-personnalisees', [CartePersonnaliseeController::class, 'store']);
-    Route::get('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'show']);
     Route::put('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'update']);
     Route::delete('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'destroy']);
 
@@ -122,3 +121,4 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
      Route::get('/cartes/category/{id}', [CarteInvitationController::class, 'getCartesByCategory']);
      Route::get('cartes/{id}', [CarteInvitationController::class, 'show']);    
      Route::get('cartes', [CarteInvitationController::class, 'index']);
+     Route::get('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'show']);

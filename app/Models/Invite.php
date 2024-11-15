@@ -11,7 +11,7 @@ class Invite extends Model
     use HasFactory;
     use Notifiable;
 
-    protected $fillable = ['carte_personnalisee_id', 'user_id', 'email','nom','statut','id'];
+    protected $fillable = ['carte_personnalisee_id', 'user_id', 'email','nom','statut','id', 'invitation_token',];
 
     public function cartePersonnalisee()
     {
