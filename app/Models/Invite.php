@@ -10,7 +10,9 @@ class Invite extends Model
 {
     use HasFactory;
     use Notifiable;
-
+    const STATUT_EN_ATTENTE = 'en_attente';
+    const STATUT_ACCEPTE = 'accepte';
+    const STATUT_REFUSE = 'refuse';
     protected $fillable = ['carte_personnalisee_id', 'user_id', 'email','nom','statut','id', 'invitation_token',];
 
     public function cartePersonnalisee()

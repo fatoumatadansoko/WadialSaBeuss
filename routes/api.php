@@ -85,10 +85,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
  });
      // Utilisateurs
      Route::get('/profile', [AuthController  ::class, 'profile']);
-     Route::post('/invitation/accepter/{id}', [CartePersonnaliseeController::class, 'accepterInvitation']);
-     Route::post('/invitation/refuser/{id}', [CartePersonnaliseeController::class, 'refuserInvitation']);
-     
- 
+     Route::post('/invitation/accepter/{token}', [CartePersonnaliseeController::class, 'accepterInvitation'])->name('invitation.accepter');
+Route::post('/invitation/refuser/{token}', [CartePersonnaliseeController::class, 'refuserInvitation'])->name('invitation.refuser');
      // CATEGORIES DES EVENEMENTS
      Route::get('categories', [CategorieController::class, 'index']);
      Route::post('categories', [CategorieController::class, 'store']);
@@ -122,3 +120,4 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
      Route::get('cartes/{id}', [CarteInvitationController::class, 'show']);    
      Route::get('cartes', [CarteInvitationController::class, 'index']);
      Route::get('/cartes-personnalisees/{id}', [CartePersonnaliseeController::class, 'show']);
+     Route::post('/verify-invitation', [CartePersonnaliseeController::class, 'verifyInvitation']);

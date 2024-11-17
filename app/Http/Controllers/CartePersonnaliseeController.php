@@ -14,6 +14,8 @@ use Illuminate\Routing\ResponseFactory;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
+
 
 
 class CartePersonnaliseeController extends Controller
@@ -362,43 +364,131 @@ public function getCartesPersonnaliseesByClientId($id)
         'data' => $cartes,
     ], 200);
 }
-public function accepterInvitation($id)
+
+public function verifyInvitation(Request $request)
 {
-    // Trouver l'invité par son ID
-    $invite = Invite::find($id);
+    try {
+        // Validation du token
+        $request->validate([
+            'token' => 'required|string'
+        ]);
 
-    if (!$invite) {
-        return response()->json(['message' => 'Invitation non trouvée'], 404);
+        // Recherche de l'invitation avec le token
+        $invite = Invite::where('invitation_token', $request->token)
+                       ->where('statut', 'en_attente')
+                       ->first();
+
+        if (!$invite) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Token d\'invitation invalide ou expiré.'
+            ], 404);
+        }
+
+        // Récupération de la carte associée
+        $carte = CartePersonnalisee::find($invite->carte_personnalisee_id);
+
+        if (!$carte) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Carte personnalisée non trouvée.'
+            ], 404);
+        }
+
+        // Mise à jour du statut de l'invitation
+        $invite->update([
+            'statut' => 'vue',
+            'date_vue' => now()
+        ]);
+
+        // Retourne les informations nécessaires
+        return response()->json([
+            'status' => true,
+            'message' => 'Token valide',
+            'data' => [
+                'invite' => [
+                    'nom' => $invite->nom,
+                    'email' => $invite->email
+                ],
+                'carte' => [
+                    'id' => $carte->id,
+                    'nom' => $carte->nom,
+                    'contenu' => $carte->contenu,
+                    'image' => $carte->image ? Storage::url($carte->image) : null
+                ]
+            ]
+        ], 200);
+
+    } catch (\Exception $e) {
+        \Log::error('Erreur verifyInvitation: ' . $e->getMessage());
+        \Log::error('Trace: ' . $e->getTraceAsString());
+        
+        return response()->json([
+            'status' => false,
+            'message' => 'Erreur lors de la vérification du token: ' . $e->getMessage()
+        ], 500);
     }
-
-    // Mettre à jour le statut de l'invité en "accepté"
-    $invite->statut = 1; // Passer à true pour accepté
-    $invite->save();
-
-    return response()->json([
-        'status' => true,
-        'message' => 'Invitation accepté avec succes',
-    ], 200);
 }
 
-public function refuserInvitation($id)
+public function accepterInvitation($token)
 {
-    // Trouver l'invité par son ID
-    $invite = Invite::find($id);
+    try {
+        Log::info("Tentative d'acceptation de l'invitation avec le token : $token");
 
-    if (!$invite) {
-        return response()->json(['message' => 'Invitation non trouvée'], 404);
+        $invitation = Invite::where('invitation_token', $token)->first();
+
+        if (!$invitation) {
+            return view('emails.erreur', ['message' => 'Invitation non trouvée']);
+        }
+
+        if ($invitation->statut !== 'en_attente') {
+            return view('emails.erreur', ['message' => 'Invitation déjà traitée']);
+        }
+
+        $invitation->update([
+            'statut' => 'accepte'
+        ]);
+
+        Log::info("Invitation acceptée pour : " . $invitation->email);
+
+        return view('emails.confirmation', [
+            'statut' => 'accepte',
+            'nom' => $invitation->nom
+        ]);
+    } catch (\Exception $e) {
+        Log::error('Erreur lors de l\'acceptation de l\'invitation : ' . $e->getMessage());
+        return view('emails.erreur', ['message' => 'Une erreur est survenue']);
     }
+}
 
-    // Mettre à jour le statut de l'invité en "refusé"
-    $invite->statut = 0; // Passer à false pour refusé
-    $invite->save();
+public function refuserInvitation($token)
+{
+    try {
+        Log::info("Tentative de refus de l'invitation avec le token : $token");
 
-    // Rediriger vers une page de confirmation ou une autre page
-    return response()->json([
-        'status' => true,
-        'message' => 'Invitation refusée avec succes',
-    ], 200);}
+        $invitation = Invite::where('invitation_token', $token)->first();
 
+        if (!$invitation) {
+            return view('emails.erreur', ['message' => 'Invitation non trouvée']);
+        }
 
+        if ($invitation->statut !== 'en_attente') {
+            return view('emails.erreur', ['message' => 'Invitation déjà traitée']);
+        }
+
+        $invitation->update([
+            'statut' => 'refuse'
+        ]);
+
+        Log::info("Invitation refusée pour : " . $invitation->email);
+
+        return view('emails.confirmation', [
+            'statut' => 'refuse',
+            'nom' => $invitation->nom
+        ]);
+    } catch (\Exception $e) {
+        Log::error('Erreur lors du refus de l\'invitation : ' . $e->getMessage());
+        return view('emails.erreur', ['message' => 'Une erreur est survenue']);
+    }
+}
 }

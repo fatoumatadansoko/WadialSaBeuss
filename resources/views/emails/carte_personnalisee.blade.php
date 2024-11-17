@@ -50,7 +50,6 @@
     <div class="container mt-5">
         <h1 class="h4">Invitation !</h1>
         <div class="card">
-            <div class="card-content">
                 <div class="card-content">
                     <p>{{ $carte->contenu }}</p>
                     <p class="invitation-name fw-bold">{{ $nom }}</p>
@@ -58,8 +57,9 @@
                     {{-- <img src="{{ $image }}" class="carte-image" alt="Image de la carte" onerror="this.onerror=null; this.src='{{ asset($image) }}';"> --}}
                 </div>
             </div>
-            <p><a href="{{ url('api/cartes-personnalisees/{id}/' . $token) }}">Télécharger ma carte d'invitation</a></p>
-
+            {{-- <p><a href="{{ url('localhost:4200/telecharger-carte/:id/' . $token) }}">Télécharger ma carte d'invitation</a></p> --}}
+            <p>Vous pouvez télécharger votre carte en cliquant sur le lien ci-dessous :</p>
+            <a href="http://localhost:4200/telecharger-carte/{{ $carte->id }}/{{ $token }}">Télécharger ma carte</a>
         </div>
     </div>
 
@@ -77,6 +77,6 @@
 </div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
-              
 </html>
